@@ -10,6 +10,7 @@ use App\Helpers\LevelSystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class SantriController extends Controller
 {
@@ -17,8 +18,8 @@ class SantriController extends Controller
     {
         $user = Auth::user();
         $levelInfo = LevelSystem::getLevelInfo($user->experience_points ?? 0);
-        $badge = LevelSystem::getBadge($user->games_completed ?? 0);
-        $nextBadge = LevelSystem::getNextBadgeRequirement($user->games_completed ?? 0);
+        $badge = LevelSystem::getBadge($user->total_games_completed ?? 0);
+        $nextBadge = LevelSystem::getNextBadgeRequirement($user->total_games_completed ?? 0);
         
         $recentScores = Score::where('user_id', $user->id)
             ->with('game')
@@ -97,7 +98,11 @@ class SantriController extends Controller
             // Update user stats dengan cara yang aman
             $user->experience_points = ($user->experience_points ?? 0) + $xpEarned;
             $user->total_score = ($user->total_score ?? 0) + $scorePercentage;
-            $user->games_completed = ($user->games_completed ?? 0) + 1;
+            
+            // HANYA +1 jika first time (FIX BUG!)
+            if ($isFirstTime) {
+                $user->total_games_completed = ($user->total_games_completed ?? 0) + 1;
+            }
             
             $levelInfo = LevelSystem::getLevelInfo($user->experience_points);
             $user->level = $levelInfo['level'];
@@ -131,12 +136,12 @@ class SantriController extends Controller
             
             return redirect()->route('santri.games.result', $game->id)
                 ->with([
-                    'score' => $scorePercentage,
-                    'correct_answers' => $correctAnswers,
-                    'total_questions' => $totalQuestions,
-                    'xp_earned' => $xpEarned,
-                    'new_level' => $levelInfo['level'],
-                    'level_name' => $levelInfo['name']
+                    'scoreValue' => $scorePercentage,
+                    'correctAnswers' => $correctAnswers,
+                    'totalQuestions' => $totalQuestions,
+                    'xpEarned' => $xpEarned,
+                    'newLevel' => $levelInfo['level'],
+                    'levelName' => $levelInfo['name']
                 ]);
                 
         } catch (\Exception $e) {
@@ -150,18 +155,19 @@ class SantriController extends Controller
         $game = Game::findOrFail($id);
         $user = Auth::user();
         
-        $score = session('score', 0);
-        $correctAnswers = session('correct_answers', 0);
-        $totalQuestions = session('total_questions', 0);
-        $xpEarned = session('xp_earned', 0);
-        $newLevel = session('new_level', $user->level ?? 1);
-        $levelName = session('level_name', 'Pemula');
+        // Safe retrieval with defaults
+        $scoreValue = session('scoreValue', 0);
+        $correctAnswers = session('correctAnswers', 0);
+        $totalQuestions = session('totalQuestions', 1);
+        $xpEarned = session('xpEarned', 0);
+        $newLevel = session('newLevel', $user->level ?? 1);
+        $levelName = session('levelName', 'Pemula');
         
         $levelInfo = LevelSystem::getLevelInfo($user->experience_points ?? 0);
-        $badge = LevelSystem::getBadge($user->games_completed ?? 0);
+        $badge = LevelSystem::getBadge($user->total_games_completed ?? 0);
         
         return view('santri.games.result', compact(
-            'game', 'score', 'correctAnswers', 'totalQuestions',
+            'game', 'scoreValue', 'correctAnswers', 'totalQuestions',
             'xpEarned', 'newLevel', 'levelName', 'levelInfo', 'badge'
         ));
     }
@@ -191,33 +197,67 @@ class SantriController extends Controller
         $user = Auth::user();
         
         $levelInfo = LevelSystem::getLevelInfo($user->experience_points ?? 0);
-        $badge = LevelSystem::getBadge($user->games_completed ?? 0);
-        $nextBadge = LevelSystem::getNextBadgeRequirement($user->games_completed ?? 0);
+        $badge = LevelSystem::getBadge($user->total_games_completed ?? 0);
         
-        $allBadges = [
-            ['name' => 'Bronze', 'emoji' => '🥉', 'required' => 10, 'earned' => ($user->games_completed ?? 0) >= 10],
-            ['name' => 'Silver', 'emoji' => '🥈', 'required' => 25, 'earned' => ($user->games_completed ?? 0) >= 25],
-            ['name' => 'Gold', 'emoji' => '🥇', 'required' => 50, 'earned' => ($user->games_completed ?? 0) >= 50],
-            ['name' => 'Diamond', 'emoji' => '💎', 'required' => 100, 'earned' => ($user->games_completed ?? 0) >= 100],
-        ];
-        
-        $totalGamesPlayed = Score::where('user_id', $user->id)->count();
-        $averageScore = $totalGamesPlayed > 0
-            ? Score::where('user_id', $user->id)->avg(DB::raw('(correct_answers / total_questions) * 100'))
-            : 0;
-        $bestScore = Score::where('user_id', $user->id)->max('score') ?? 0;
-        $totalCorrectAnswers = Score::where('user_id', $user->id)->sum('correct_answers');
-        
-        $gameTypeStats = Score::where('user_id', $user->id)
-            ->join('games', 'scores.game_id', '=', 'games.id')
-            ->select('games.type', DB::raw('COUNT(*) as count'), DB::raw('AVG(scores.score) as avg_score'))
-            ->groupBy('games.type')
+        $recentScores = Score::where('user_id', $user->id)
+            ->with('game')
+            ->orderBy('completed_at', 'desc')
+            ->take(5)
             ->get();
         
-        return view('santri.profile', compact(
-            'user', 'levelInfo', 'badge', 'nextBadge', 'allBadges',
-            'totalGamesPlayed', 'averageScore', 'bestScore', 
-            'totalCorrectAnswers', 'gameTypeStats'
-        ));
+        return view('santri.profile', compact('user', 'levelInfo', 'badge', 'recentScores'));
+    }
+
+    /**
+     * UPDATE PROFILE PHOTO (NEW METHOD - FIX BUG!)
+     */
+    public function updateProfilePhoto(Request $request)
+    {
+        $request->validate([
+            'profile_photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        try {
+            $user = Auth::user();
+
+            // Delete old photo if exists
+            if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+
+            // Store new photo
+            $path = $request->file('profile_photo')->store('profile_photos', 'public');
+            $user->profile_photo = $path;
+            $user->save();
+
+            return redirect()->route('santri.profile')
+                ->with('success', 'Foto profil berhasil diupdate!');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * DELETE PROFILE PHOTO (NEW METHOD - FIX BUG!)
+     */
+    public function deleteProfilePhoto()
+    {
+        try {
+            $user = Auth::user();
+
+            if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+
+            $user->profile_photo = null;
+            $user->save();
+
+            return redirect()->route('santri.profile')
+                ->with('success', 'Foto profil berhasil dihapus!');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghapus foto: ' . $e->getMessage());
+        }
     }
 }
