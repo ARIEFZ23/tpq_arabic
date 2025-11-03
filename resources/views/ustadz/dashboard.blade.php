@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             <!-- Welcome Card -->
-            <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-8 mb-6 text-white">
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-8 mb-6 text-gray-900">
                 <h1 class="text-3xl font-bold mb-2">Assalamu'alaikum, Ustadz {{ Auth::user()->name }}! 👋</h1>
                 <p class="text-lg">Kelola game dan pertanyaan pembelajaran di sini</p>
             </div>
@@ -71,24 +71,25 @@
 
             <!-- Quick Actions -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <a href="{{ route('ustadz.games.create') }}" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl p-6 shadow-lg transform hover:scale-105 transition-all">
+                <a href="{{ route('ustadz.games.create') }}" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-gray-900 rounded-xl p-6 shadow-lg transform hover:scale-105 transition-all">
                     <div class="text-4xl mb-3">➕</div>
                     <h3 class="text-xl font-bold mb-2">Buat Game Baru</h3>
                     <p class="text-sm opacity-90">Tambah game pembelajaran baru</p>
                 </a>
 
-                <a href="{{ route('ustadz.games.index') }}" class="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white rounded-xl p-6 shadow-lg transform hover:scale-105 transition-all">
+                <a href="{{ route('ustadz.games.index') }}" class="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-gray-900 rounded-xl p-6 shadow-lg transform hover:scale-105 transition-all">
                     <div class="text-4xl mb-3">📚</div>
                     <h3 class="text-xl font-bold mb-2">Kelola Game</h3>
                     <p class="text-sm opacity-90">Edit dan kelola game yang ada</p>
                 </a>
 
-                <a href="{{ route('ustadz.scores.index') }}" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white rounded-xl p-6 shadow-lg transform hover:scale-105 transition-all">
+                <a href="{{ route('ustadz.scores.index') }}" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-gray-900 rounded-xl p-6 shadow-lg transform hover:scale-105 transition-all">
                     <div class="text-4xl mb-3">📈</div>
                     <h3 class="text-xl font-bold mb-2">Lihat Skor</h3>
                     <p class="text-sm opacity-90">Monitor progress santri</p>
                 </a>
             </div>
+
 
             <!-- Recent Games -->
             <div class="bg-white rounded-xl shadow-lg p-6">

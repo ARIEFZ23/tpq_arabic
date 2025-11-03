@@ -1,11 +1,13 @@
 @php
-    // Safe variable defaults - mencegah undefined variable
-    $scoreValue = $scoreValue ?? $score ?? 0;
-    $correctAnswers = $correctAnswers ?? 0;
-    $totalQuestions = $totalQuestions ?? 1;
-    $xpEarned = $xpEarned ?? 0;
-    $newLevel = $newLevel ?? auth()->user()->level ?? 1;
-    $levelName = $levelName ?? 'Pemula';
+    // Safe session retrieval with proper defaults (FIX BUG!)
+    $scoreValue = session('scoreValue', 0);
+    $correctAnswers = session('correctAnswers', 0);
+    $totalQuestions = session('totalQuestions', 1);
+    $xpEarned = session('xpEarned', 0);
+    $newLevel = session('newLevel', auth()->user()->level ?? 1);
+    $levelName = session('levelName', 'Pemula');
+    
+    // Ensure variables exist for view
     $levelInfo = $levelInfo ?? ['progress_percentage' => 0, 'current_xp' => 0, 'max_xp' => 100];
     $badge = $badge ?? ['emoji' => '⭐', 'name' => 'Beginner'];
 @endphp

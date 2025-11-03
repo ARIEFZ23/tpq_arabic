@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            //
+            $table->string('profile_photo')->nullable()->after('current_badge');
+            $table->integer('total_score')->default(0)->after('total_games_completed');
         });
     }
 
@@ -22,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            //
+            $table->dropColumn(['profile_photo', 'total_score']);
         });
     }
 };

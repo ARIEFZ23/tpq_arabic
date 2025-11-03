@@ -401,24 +401,32 @@ class UstadzController extends Controller
     }
 
     /**
-     * Matrix Review - Lihat semua jawaban semua santri dalam 1 matrix
-     */
-    public function reviewMatrix($game_id)
-    {
-        $game = Game::where('created_by', Auth::id())
-            ->with('questions')
-            ->findOrFail($game_id);
+ * Matrix Review - Lihat semua jawaban semua santri dalam 1 matrix (FIXED!)
+ */
+public function reviewMatrix($game_id)
+{
+    $game = Game::where('created_by', Auth::id())
+        ->with('questions')
+        ->findOrFail($game_id);
 
-        // Ambil semua score terakhir untuk game ini
-        $latestScores = Score::where('game_id', $game_id)
-            ->with(['user', 'answerLogs.question'])
-            ->orderBy('completed_at', 'desc')
-            ->get()
-            ->groupBy('user_id')
-            ->map(function($userScores) {
-                return $userScores->first(); // Ambil attempt terakhir
-            });
+    // Ambil semua santri yang PERNAH mengerjakan game ini
+    $santriList = \App\Models\User::whereHas('scores', function($q) use ($game_id) {
+        $q->where('game_id', $game_id);
+    })
+    ->where(function($query) {
+        $query->where('role', 'santri_putra')
+              ->orWhere('role', 'santri_putri');
+    })
+    ->get();
 
-            return view('ustadz.scores.matrix', compact('game', 'latestScores'));
-    }
+    // Group answer logs by user_id-question_id key (FIX BUG!)
+    $answerLogs = AnswerLog::where('game_id', $game_id)
+        ->whereIn('user_id', $santriList->pluck('id'))
+        ->get()
+        ->groupBy(function($log) {
+            return $log->user_id . '-' . $log->question_id;
+        });
+
+    return view('ustadz.scores.matrix', compact('game', 'santriList', 'answerLogs'));
+}
 }

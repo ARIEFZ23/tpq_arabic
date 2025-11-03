@@ -1,186 +1,198 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    📊 Review Matrix: {{ $game->title }}
-                </h2>
-                <p class="text-sm text-gray-600 mt-1">Lihat semua jawaban santri dalam satu tabel</p>
-            </div>
-            <a href="{{ route('ustadz.scores.game', $game->id) }}" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
-                ← Kembali
-            </a>
-        </div>
-    </x-slot>
+<?php
 
-    <div class="py-12">
-        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
-            
-            @if($latestScores->count() > 0 && $game->questions->count() > 0)
-                <!-- Matrix Table -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 p-6">
-                        <h2 class="text-2xl font-bold text-white">Matrix Koreksi Jawaban</h2>
-                        <p class="text-white text-sm opacity-90 mt-1">{{ $latestScores->count() }} Santri • {{ $game->questions->count() }} Soal</p>
-                    </div>
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SantriController;
+use App\Http\Controllers\UstadzController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\GameController;
+use App\Http\Controllers\Admin\QuestionController;
+use App\Http\Controllers\Auth\RegisterSantriController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider sticky left-0 bg-gray-100 z-10">
-                                        Nama Santri
-                                    </th>
-                                    @foreach($game->questions as $index => $question)
-                                        <th class="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider min-w-[100px]">
-                                            <div class="flex flex-col items-center">
-                                                <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full mb-1">Soal {{ $index + 1 }}</span>
-                                                <span class="text-xs font-normal text-gray-500 normal-case">{{ Str::limit($question->question_text, 30) }}</span>
-                                            </div>
-                                        </th>
-                                    @endforeach
-                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider bg-blue-50">
-                                        Total
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach($latestScores as $score)
-                                    <tr class="hover:bg-gray-50 transition">
-                                        <!-- Nama Santri (Sticky Column) -->
-                                        <td class="px-6 py-4 whitespace-nowrap sticky left-0 bg-white z-10 border-r border-gray-200">
-                                            <div class="flex items-center">
-                                                <div class="text-2xl mr-3">
-                                                    @if($score->user->role === 'santri_putra') 👨‍🎓
-                                                    @else 👩‍🎓
-                                                    @endif
-                                                </div>
-                                                <div>
-                                                    <div class="text-sm font-bold text-gray-900">{{ $score->user->name }}</div>
-                                                    <div class="text-xs text-gray-500">{{ $score->user->email }}</div>
-                                                </div>
-                                            </div>
-                                        </td>
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
 
-                                        <!-- Jawaban per Soal -->
-                                        @php
-                                            // Buat map jawaban berdasarkan question_id untuk akses cepat
-                                            $answersMap = $score->answerLogs->keyBy('question_id');
-                                        @endphp
+// Home Page
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
 
-                                        @foreach($game->questions as $question)
-                                            @php
-                                                $answer = $answersMap->get($question->id);
-                                            @endphp
-                                            <td class="px-4 py-4 text-center">
-                                                @if($answer)
-                                                    @if($answer->is_correct)
-                                                        <!-- Jawaban Benar -->
-                                                        <div class="inline-flex flex-col items-center">
-                                                            <span class="text-3xl">✅</span>
-                                                            <span class="text-xs text-green-600 font-medium mt-1">Benar</span>
-                                                        </div>
-                                                    @else
-                                                        <!-- Jawaban Salah -->
-                                                        <div class="inline-flex flex-col items-center">
-                                                            <span class="text-3xl">❌</span>
-                                                            <span class="text-xs text-red-600 font-medium mt-1">Salah</span>
-                                                            <div class="mt-2 p-2 bg-red-50 rounded text-xs">
-                                                                <p class="text-gray-500">Jawab:</p>
-                                                                <p class="font-semibold text-red-700">{{ $answer->user_answer ?: '-' }}</p>
-                                                                <p class="text-gray-500 mt-1">Benar:</p>
-                                                                <p class="font-semibold text-green-700">{{ $answer->correct_answer }}</p>
-                                                            </div>
-                                                        </div>
-                                                    @endif
-                                                @else
-                                                    <!-- Tidak Dijawab -->
-                                                    <div class="inline-flex flex-col items-center">
-                                                        <span class="text-3xl">⚪</span>
-                                                        <span class="text-xs text-gray-400 font-medium mt-1">Kosong</span>
-                                                    </div>
-                                                @endif
-                                            </td>
-                                        @endforeach
+/*
+|--------------------------------------------------------------------------
+| Registrasi Santri Routes (Public - Sebelum Login)
+|--------------------------------------------------------------------------
+*/
 
-                                        <!-- Total Score -->
-                                        <td class="px-6 py-4 text-center bg-blue-50">
-                                            @php
-                                                $scoreValue = ($score->correct_answers / $score->total_questions) * 100;
-                                            @endphp
-                                            <div class="flex flex-col items-center">
-                                                @if($scoreValue >= 80)
-                                                    <span class="px-4 py-2 inline-flex text-2xl font-bold rounded-full bg-green-100 text-green-800">
-                                                        {{ number_format($scoreValue, 0) }}
-                                                    </span>
-                                                    <span class="text-xs text-green-600 font-medium mt-1">🌟 Excellent</span>
-                                                @elseif($scoreValue >= 60)
-                                                    <span class="px-4 py-2 inline-flex text-2xl font-bold rounded-full bg-blue-100 text-blue-800">
-                                                        {{ number_format($scoreValue, 0) }}
-                                                    </span>
-                                                    <span class="text-xs text-blue-600 font-medium mt-1">👍 Good</span>
-                                                @else
-                                                    <span class="px-4 py-2 inline-flex text-2xl font-bold rounded-full bg-purple-100 text-purple-800">
-                                                        {{ number_format($scoreValue, 0) }}
-                                                    </span>
-                                                    <span class="text-xs text-purple-600 font-medium mt-1">💪 Keep Going</span>
-                                                @endif
-                                                <p class="text-xs text-gray-500 mt-1">{{ $score->correct_answers }}/{{ $score->total_questions }}</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+Route::get('/register-santri', [RegisterSantriController::class, 'create'])
+    ->middleware('guest')
+    ->name('register.santri');
 
-                <!-- Legend -->
-                <div class="mt-6 bg-white rounded-xl shadow-lg p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Keterangan:</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div class="flex items-center space-x-3">
-                            <span class="text-3xl">✅</span>
-                            <div>
-                                <p class="font-semibold text-green-700">Jawaban Benar</p>
-                                <p class="text-xs text-gray-500">Santri menjawab dengan benar</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <span class="text-3xl">❌</span>
-                            <div>
-                                <p class="font-semibold text-red-700">Jawaban Salah</p>
-                                <p class="text-xs text-gray-500">Santri menjawab tapi salah</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <span class="text-3xl">⚪</span>
-                            <div>
-                                <p class="font-semibold text-gray-700">Tidak Dijawab</p>
-                                <p class="text-xs text-gray-500">Santri tidak menjawab soal</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+Route::post('/register-santri', [RegisterSantriController::class, 'store'])
+    ->middleware('guest')
+    ->name('register.santri.store');
 
-            @else
-                <!-- Empty State -->
-                <div class="bg-white rounded-xl shadow-lg p-16 text-center">
-                    <div class="text-6xl mb-4">📊</div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">Belum Ada Data</h3>
-                    <p class="text-gray-500 mb-6">
-                        @if($game->questions->count() == 0)
-                            Game ini belum memiliki soal. Tambahkan soal terlebih dahulu.
-                        @else
-                            Belum ada santri yang mengerjakan game ini.
-                        @endif
-                    </p>
-                    <a href="{{ route('ustadz.games.show', $game->id) }}" class="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition">
-                        📝 Kelola Game Ini
-                    </a>
-                </div>
-            @endif
+/*
+|--------------------------------------------------------------------------
+| Auth Routes (sudah di-include dari routes/auth.php)
+|--------------------------------------------------------------------------
+*/
 
-        </div>
-    </div>
-</x-app-layout>
+require __DIR__.'/auth.php';
+
+/*
+|--------------------------------------------------------------------------
+| Dashboard Route (Auto Redirect berdasarkan Role)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/dashboard', function () {
+    $user = Auth::user();
+    
+    if ($user->isAdmin()) {
+        return redirect()->route('admin.dashboard');
+    } elseif ($user->isTeacher()) {
+        return redirect()->route('ustadz.dashboard');
+    } elseif ($user->isSantri()) {
+        return redirect()->route('santri.dashboard');
+    }
+    
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+/*
+|--------------------------------------------------------------------------
+| Profile Routes (All Authenticated Users)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    
+    // Dashboard
+    Route::get('/dashboard', function() {
+        $user = Auth::user();
+        $totalUsers = \App\Models\User::count();
+        $totalGames = \App\Models\Game::count();
+        $totalQuestions = \App\Models\Question::count();
+        $totalScores = \App\Models\Score::count();
+        
+        return view('dashboard', compact('totalUsers', 'totalGames', 'totalQuestions', 'totalScores'));
+    })->name('dashboard');
+    
+    // User Management
+    Route::resource('users', UserController::class);
+    
+    // Game Management
+    Route::resource('games', GameController::class);
+    
+    // Question Management
+    Route::resource('questions', QuestionController::class);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Ustadz/Ustadzah Routes (Teacher)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'teacher'])->prefix('ustadz')->name('ustadz.')->group(function () {
+    
+    // Dashboard
+    Route::get('/dashboard', [UstadzController::class, 'dashboard'])->name('dashboard');
+    
+    // Games
+    Route::get('/games', [UstadzController::class, 'games'])->name('games.index');
+    Route::get('/games/create', [UstadzController::class, 'createGame'])->name('games.create');
+    Route::post('/games', [UstadzController::class, 'storeGame'])->name('games.store');
+    Route::get('/games/{id}', [UstadzController::class, 'showGame'])->name('games.show');
+    Route::get('/games/{id}/edit', [UstadzController::class, 'editGame'])->name('games.edit');
+    Route::put('/games/{id}', [UstadzController::class, 'updateGame'])->name('games.update');
+    Route::delete('/games/{id}', [UstadzController::class, 'destroyGame'])->name('games.destroy');
+    
+    // Questions
+    Route::get('/games/{game_id}/questions', [UstadzController::class, 'questions'])->name('games.questions.index');
+    Route::get('/games/{game_id}/questions/create', [UstadzController::class, 'createQuestion'])->name('games.questions.create');
+    Route::post('/games/{game_id}/questions', [UstadzController::class, 'storeQuestion'])->name('games.questions.store');
+    Route::get('/games/{game_id}/questions/{question_id}/edit', [UstadzController::class, 'editQuestion'])->name('games.questions.edit');
+    Route::put('/games/{game_id}/questions/{question_id}', [UstadzController::class, 'updateQuestion'])->name('games.questions.update');
+    Route::delete('/games/{game_id}/questions/{question_id}', [UstadzController::class, 'destroyQuestion'])->name('games.questions.destroy');
+    
+    // Scores
+    Route::get('/scores', [UstadzController::class, 'scores'])->name('scores.index');
+    Route::get('/scores/game/{game_id}', [UstadzController::class, 'gameScores'])->name('scores.game');
+    Route::get('/scores/{score_id}/detail', [UstadzController::class, 'scoreDetail'])->name('scores.detail');
+    Route::get('/scores/game/{game_id}/matrix', [UstadzController::class, 'reviewMatrix'])->name('scores.matrix');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Santri Routes (Students)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(function () {
+    
+    // Dashboard
+    Route::get('/dashboard', [SantriController::class, 'dashboard'])->name('dashboard');
+    
+    // Games
+    Route::get('/games', [SantriController::class, 'games'])->name('games');
+    Route::get('/games/{id}/play', [SantriController::class, 'playGame'])->name('games.play');
+    Route::post('/games/{id}/submit', [SantriController::class, 'submitGame'])->name('games.submit');
+    Route::get('/games/{id}/result', [SantriController::class, 'gameResult'])->name('games.result');
+    
+    // Scores
+    Route::get('/scores', [SantriController::class, 'scores'])->name('scores');
+    
+    // Profile
+    Route::get('/profile', [SantriController::class, 'profile'])->name('profile');
+    
+    // Profile Photo Upload
+    Route::post('/profile/photo', function(\Illuminate\Http\Request $request) {
+        $request->validate([
+            'profile_photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+        
+        $user = Auth::user();
+        
+        // Delete old photo if exists
+        if ($user->profile_photo && \Storage::disk('public')->exists($user->profile_photo)) {
+            \Storage::disk('public')->delete($user->profile_photo);
+        }
+        
+        // Store new photo
+        $path = $request->file('profile_photo')->store('profile-photos', 'public');
+        $user->profile_photo = $path;
+        $user->save();
+        
+        return back()->with('success', 'Foto profil berhasil diupdate!');
+    })->name('profile.photo.update');
+    
+    Route::delete('/profile/photo', function() {
+        $user = Auth::user();
+        
+        if ($user->profile_photo && \Storage::disk('public')->exists($user->profile_photo)) {
+            \Storage::disk('public')->delete($user->profile_photo);
+        }
+        
+        $user->profile_photo = null;
+        $user->save();
+        
+        return back()->with('success', 'Foto profil berhasil dihapus!');
+    })->name('profile.photo.delete');
+});

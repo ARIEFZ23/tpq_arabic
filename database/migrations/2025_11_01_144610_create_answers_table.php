@@ -11,16 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('answers', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('game_id')->constrained()->onDelete('cascade');
-            $table->foreignId('question_id')->constrained()->onDelete('cascade');
-            $table->foreignId('score_id')->nullable()->constrained()->onDelete('cascade');
-            $table->text('user_answer'); // Jawaban yang ditulis santri
-            $table->boolean('is_correct'); // Benar (1) atau Salah (0)
-            $table->timestamps();
-        });
+        // Cek apakah table 'answers' ada, kalau ada rename ke 'answer_logs'
+        if (Schema::hasTable('answers') && !Schema::hasTable('answer_logs')) {
+            Schema::rename('answers', 'answer_logs');
+        }
     }
 
     /**
@@ -28,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('answers');
+        if (Schema::hasTable('answer_logs') && !Schema::hasTable('answers')) {
+            Schema::rename('answer_logs', 'answers');
+        }
     }
 };
