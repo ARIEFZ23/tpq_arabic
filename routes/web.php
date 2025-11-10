@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Auth;
 | Public Routes
 |--------------------------------------------------------------------------
 */
-
 // Home Page
 Route::get('/', function () {
     return view('welcome');
@@ -26,7 +25,6 @@ Route::get('/', function () {
 | Registrasi Santri Routes (Public - Sebelum Login)
 |--------------------------------------------------------------------------
 */
-
 Route::get('/register-santri', [RegisterSantriController::class, 'create'])
     ->middleware('guest')
     ->name('register.santri');
@@ -37,10 +35,9 @@ Route::post('/register-santri', [RegisterSantriController::class, 'store'])
 
 /*
 |--------------------------------------------------------------------------
-| Auth Routes (sudah di-include dari routes/auth.php)
+| Auth Routes
 |--------------------------------------------------------------------------
 */
-
 require __DIR__.'/auth.php';
 
 /*
@@ -48,7 +45,6 @@ require __DIR__.'/auth.php';
 | Dashboard Route (Auto Redirect berdasarkan Role)
 |--------------------------------------------------------------------------
 */
-
 Route::get('/dashboard', function () {
     $user = Auth::user();
     
@@ -68,7 +64,6 @@ Route::get('/dashboard', function () {
 | Profile Routes (All Authenticated Users)
 |--------------------------------------------------------------------------
 */
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -80,7 +75,6 @@ Route::middleware('auth')->group(function () {
 | Admin Routes
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Dashboard
@@ -99,6 +93,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Game Management
     Route::resource('games', GameController::class);
+    Route::post('/games/{game}/status', [GameController::class, 'toggleStatus'])->name('games.toggleStatus');
     
     // Question Management
     Route::resource('questions', QuestionController::class);
@@ -109,7 +104,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 | Ustadz/Ustadzah Routes (Teacher)
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth', 'teacher'])->prefix('ustadz')->name('ustadz.')->group(function () {
     
     // Dashboard
@@ -123,7 +117,8 @@ Route::middleware(['auth', 'teacher'])->prefix('ustadz')->name('ustadz.')->group
     Route::get('/games/{id}/edit', [UstadzController::class, 'editGame'])->name('games.edit');
     Route::put('/games/{id}', [UstadzController::class, 'updateGame'])->name('games.update');
     Route::delete('/games/{id}', [UstadzController::class, 'destroyGame'])->name('games.destroy');
-    
+    Route::post('/games/{id}/status', [UstadzController::class, 'toggleStatus'])->name('games.toggleStatus');
+
     // Questions
     Route::get('/games/{game_id}/questions', [UstadzController::class, 'questions'])->name('games.questions.index');
     Route::get('/games/{game_id}/questions/create', [UstadzController::class, 'createQuestion'])->name('games.questions.create');
@@ -144,7 +139,6 @@ Route::middleware(['auth', 'teacher'])->prefix('ustadz')->name('ustadz.')->group
 | Santri Routes (Students)
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(function () {
     
     // Dashboard
@@ -156,12 +150,29 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
     Route::post('/games/{id}/submit', [SantriController::class, 'submitGame'])->name('games.submit');
     Route::get('/games/{id}/result', [SantriController::class, 'gameResult'])->name('games.result');
     
+    // ✅ Survival Quiz (Game Bawaan)
+    Route::prefix('survival')->name('survival.')->group(function () {
+        Route::get('/play', [SantriController::class, 'survivalGamePlay'])->name('play');
+        Route::post('/submit', [SantriController::class, 'survivalGameSubmit'])->name('submit');
+    });
+
+    // ✅ Sentence Builder Game (Game Bawaan)
+    Route::prefix('sentence-builder')->name('sentence-builder.')->group(function () {
+        Route::get('/play', [SantriController::class, 'playSentenceBuilder'])->name('play');
+        Route::post('/check', [SantriController::class, 'checkSentenceBuilder'])->name('check');
+        Route::post('/submit', [SantriController::class, 'submitSentenceBuilder'])->name('submit');
+        Route::get('/result', [SantriController::class, 'resultSentenceBuilder'])->name('result');
+    });
+
     // Scores
     Route::get('/scores', [SantriController::class, 'scores'])->name('scores');
     
+    // Leaderboard
+    Route::get('/leaderboard', [SantriController::class, 'leaderboard'])->name('leaderboard');
+    
     // Profile
     Route::get('/profile', [SantriController::class, 'profile'])->name('profile');
-    
+
     // Profile Photo Upload
     Route::post('/profile/photo', function(\Illuminate\Http\Request $request) {
         $request->validate([
@@ -170,12 +181,10 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
         
         $user = Auth::user();
         
-        // Delete old photo if exists
         if ($user->profile_photo && \Storage::disk('public')->exists($user->profile_photo)) {
             \Storage::disk('public')->delete($user->profile_photo);
         }
         
-        // Store new photo
         $path = $request->file('profile_photo')->store('profile-photos', 'public');
         $user->profile_photo = $path;
         $user->save();

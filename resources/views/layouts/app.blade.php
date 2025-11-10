@@ -7,14 +7,33 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <!-- ====================================================== -->
+        <!--     PERBAIKAN: MENGGUNAKAN CDN, MENGHAPUS VITE     -->
+        <!-- ====================================================== -->
+        
+        <!-- Fonts (DIGANTI: Menggunakan Poppins agar konsisten) -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+        <!-- Scripts (DIGANTI: VITE diganti dengan CDN) -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <!-- Defer sangat penting untuk Alpine.js -->
+        <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+        <style>
+            /* DITAMBAHKAN: Memastikan font Poppins diterapkan */
+            body, [x-cloak] {
+                font-family: 'Poppins', sans-serif;
+            }
+        </style>
+        <!-- ====================================================== -->
+        <!--              AKHIR DARI PERBAIKAN CDN                -->
+        <!-- ====================================================== -->
     </head>
-    <body class="font-sans antialiased">
+    
+    <!-- DIUBAH: font-sans dihapus agar style di atas berlaku -->
+    <body class="antialiased">
         <div class="min-h-screen bg-gray-100">
             @include('layouts.navigation')
 

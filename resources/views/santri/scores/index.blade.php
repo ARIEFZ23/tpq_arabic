@@ -1,3 +1,8 @@
+@extends('layouts.santri')
+
+@section('title', 'Riwayat Skor')
+
+@section('content')
 @php
     // Safe variable defaults
     $scores = $scores ?? collect();
@@ -6,245 +11,318 @@
     $bestScore = $bestScore ?? 0;
 @endphp
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Riwayat Skor - TPQ Arabic Learning</title>
-    
-    <!-- Tailwind CSS via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Alpine.js via CDN -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
-    <!-- Google Fonts - Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-        }
-    </style>
-</head>
-<body class="bg-gradient-to-br from-purple-50 to-blue-50 min-h-screen">
-
-    <!-- Navbar -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo -->
-                <div class="flex items-center">
-                    <span class="text-2xl font-bold text-purple-600">🕌 TPQ Arabic</span>
-                </div>
-                
-                <!-- Navigation -->
-                <div class="hidden md:flex space-x-6">
-                    <a href="{{ route('santri.dashboard') }}" class="text-gray-600 hover:text-purple-600 px-3 py-2">
-                        Dashboard
-                    </a>
-                    <a href="{{ route('santri.games') }}" class="text-gray-600 hover:text-purple-600 px-3 py-2">
-                        Games
-                    </a>
-                    <a href="{{ route('santri.scores') }}" class="text-purple-600 font-semibold border-b-2 border-purple-600 px-3 py-2">
-                        Skor Saya
-                    </a>
-                    <a href="{{ route('santri.profile') }}" class="text-gray-600 hover:text-purple-600 px-3 py-2">
-                        Profile
-                    </a>
-                </div>
-                
-                <!-- User Menu -->
-                <div class="flex items-center space-x-4">
-                    <span class="text-gray-700 font-medium">{{ auth()->user()->name }}</span>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                            Logout
-                        </button>
-                    </form>
+<!-- Header with Animation -->
+<div class="mb-10" 
+     x-data="{ show: false }" 
+     x-init="setTimeout(() => show = true, 100)"
+     x-show="show"
+     x-transition:enter="transition ease-out duration-700"
+     x-transition:enter-start="opacity-0 translate-y-[-20px]">
+    <div class="text-center">
+        <div class="inline-block mb-4">
+            <div class="relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-3xl blur-xl opacity-50 animate-pulse"></div>
+                <div class="relative bg-gradient-to-br from-emerald-500 to-teal-500 rounded-3xl p-6 shadow-2xl">
+                    <span class="text-7xl">📊</span>
                 </div>
             </div>
         </div>
-    </nav>
+        <h1 class="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-3">
+            Riwayat Skor
+        </h1>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+            Lihat semua hasil game yang sudah kamu mainkan dan pantau perkembanganmu! 📈
+        </p>
+    </div>
+</div>
 
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    
+    <!-- Total Games -->
+    <div x-data="{ show: false }" 
+         x-init="setTimeout(() => show = true, 300)"
+         x-show="show"
+         x-transition:enter="transition ease-out duration-700"
+         x-transition:enter-start="opacity-0 scale-95">
+        <div class="group bg-white rounded-2xl shadow-xl p-6 border-2 border-emerald-200 hover:border-emerald-400 transition-all hover:scale-105 hover:shadow-2xl">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-gray-600">Total Game Dimainkan</h3>
+                <div class="text-4xl transform group-hover:scale-110 group-hover:rotate-12 transition-transform">🎮</div>
+            </div>
+            <div class="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                {{ $totalGamesPlayed }}
+            </div>
+            <div class="mt-2 text-xs text-gray-500 font-medium">Game selesai</div>
+        </div>
+    </div>
+
+    <!-- Average Score -->
+    <div x-data="{ show: false }" 
+         x-init="setTimeout(() => show = true, 400)"
+         x-show="show"
+         x-transition:enter="transition ease-out duration-700"
+         x-transition:enter-start="opacity-0 scale-95">
+        <div class="group bg-white rounded-2xl shadow-xl p-6 border-2 border-blue-200 hover:border-blue-400 transition-all hover:scale-105 hover:shadow-2xl">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-gray-600">Rata-rata Skor</h3>
+                <div class="text-4xl transform group-hover:scale-110 group-hover:rotate-12 transition-transform">📈</div>
+            </div>
+            <div class="text-5xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                {{ number_format($averageScore, 1) }}%
+            </div>
+            <div class="mt-2 text-xs text-gray-500 font-medium">Performa rata-rata</div>
+        </div>
+    </div>
+
+    <!-- Best Score -->
+    <div x-data="{ show: false }" 
+         x-init="setTimeout(() => show = true, 500)"
+         x-show="show"
+         x-transition:enter="transition ease-out duration-700"
+         x-transition:enter-start="opacity-0 scale-95">
+        <div class="group bg-white rounded-2xl shadow-xl p-6 border-2 border-yellow-200 hover:border-yellow-400 transition-all hover:scale-105 hover:shadow-2xl">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-gray-600">Skor Tertinggi</h3>
+                <div class="text-4xl transform group-hover:scale-110 group-hover:rotate-12 transition-transform">🏆</div>
+            </div>
+            <div class="text-5xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+                {{ number_format($bestScore, 0) }}%
+            </div>
+            <div class="mt-2 text-xs text-gray-500 font-medium">Prestasi terbaik</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Score History Table -->
+<div x-data="{ show: false }" 
+     x-init="setTimeout(() => show = true, 600)"
+     x-show="show"
+     x-transition:enter="transition ease-out duration-700"
+     x-transition:enter-start="opacity-0 scale-95">
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-emerald-200">
         
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">📊 Riwayat Skor</h1>
-            <p class="text-gray-600">Lihat semua hasil game yang sudah kamu mainkan</p>
+        <!-- Table Header -->
+        <div class="relative bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-6 py-5 overflow-hidden">
+            <div class="absolute inset-0" style="background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); background-size: 1000px 100%; animation: shimmer 2s infinite;"></div>
+            <h2 class="relative text-2xl font-bold text-white drop-shadow-lg flex items-center gap-3">
+                <span class="text-3xl">📋</span>
+                <span>Riwayat Lengkap</span>
+            </h2>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            
-            <!-- Total Games -->
-            <div class="bg-white rounded-2xl shadow-xl p-6">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-sm font-semibold text-gray-600">Total Game Dimainkan</h3>
-                    <span class="text-3xl">🎮</span>
-                </div>
-                <div class="text-4xl font-bold text-purple-600">{{ $totalGamesPlayed }}</div>
-            </div>
+        @if($scores->count() > 0)
+        
+        <!-- Table Content (Desktop) -->
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            No
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Game
+                        </th>
+                        <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Skor
+                        </th>
+                        <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Benar/Total
+                        </th>
+                        <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            Tanggal
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    @foreach($scores as $index => $score)
+                    <tr class="hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all group">
+                        
+                        <!-- Number -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 text-sm font-bold text-emerald-700 group-hover:scale-110 transition-transform">
+                                {{ ($scores->currentPage() - 1) * $scores->perPage() + $index + 1 }}
+                            </span>
+                        </td>
 
-            <!-- Average Score -->
-            <div class="bg-white rounded-2xl shadow-xl p-6">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-sm font-semibold text-gray-600">Rata-rata Skor</h3>
-                    <span class="text-3xl">📈</span>
-                </div>
-                <div class="text-4xl font-bold text-blue-600">{{ number_format($averageScore, 1) }}%</div>
-            </div>
-
-            <!-- Best Score -->
-            <div class="bg-white rounded-2xl shadow-xl p-6">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-sm font-semibold text-gray-600">Skor Tertinggi</h3>
-                    <span class="text-3xl">🏆</span>
-                </div>
-                <div class="text-4xl font-bold text-green-600">{{ number_format($bestScore, 0) }}%</div>
-            </div>
-
-        </div>
-
-        <!-- Score History Table -->
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-            
-            <!-- Table Header -->
-            <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-4">
-                <h2 class="text-2xl font-bold text-white">Riwayat Lengkap</h2>
-            </div>
-
-            @if($scores->count() > 0)
-            
-            <!-- Table Content -->
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                No
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                Game
-                            </th>
-                            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                Skor
-                            </th>
-                            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                Benar/Total
-                            </th>
-                            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                Tanggal
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        @foreach($scores as $index => $score)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            
-                            <!-- Number -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-medium text-gray-900">
-                                    {{ ($scores->currentPage() - 1) * $scores->perPage() + $index + 1 }}
-                                </span>
-                            </td>
-
-                            <!-- Game Info -->
-                            <td class="px-6 py-4">
-                                <div class="flex items-center space-x-3">
-                                    <div class="text-3xl">
-                                        @if($score->game->type == 'tebak_gambar')
-                                            🖼️
-                                        @elseif($score->game->type == 'kosakata_tempat')
-                                            🏫
-                                        @elseif($score->game->type == 'pilihan_ganda')
-                                            ✅
-                                        @else
-                                            💬
-                                        @endif
-                                    </div>
-                                    <div>
-                                        <div class="text-sm font-semibold text-gray-900">
-                                            {{ $score->game->title }}
-                                        </div>
-                                        <div class="text-xs text-gray-500">
-                                            {{ ucfirst(str_replace('_', ' ', $score->game->type)) }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-
-                            <!-- Score -->
-                            <td class="px-6 py-4 text-center">
-                                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold
-                                    @if($score->score >= 80) bg-green-100 text-green-700
-                                    @elseif($score->score >= 60) bg-blue-100 text-blue-700
-                                    @else bg-orange-100 text-orange-700
+                        <!-- Game Info -->
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br 
+                                    @if($score->game->type == 'tebak_gambar') from-pink-400 to-red-500
+                                    @elseif($score->game->type == 'kosakata_tempat') from-blue-400 to-indigo-500
+                                    @elseif($score->game->type == 'pilihan_ganda') from-emerald-400 to-teal-500
+                                    @else from-amber-400 to-orange-500
                                     @endif
-                                ">
-                                    {{ number_format($score->score, 0) }}%
-                                </span>
-                            </td>
-
-                            <!-- Correct/Total -->
-                            <td class="px-6 py-4 text-center">
-                                <span class="text-sm text-gray-900 font-medium">
-                                    {{ $score->correct_answers }} / {{ $score->total_questions }}
-                                </span>
-                            </td>
-
-                            <!-- Date -->
-                            <td class="px-6 py-4 text-center">
-                                <div class="text-sm text-gray-900">
-                                    {{ $score->completed_at->format('d M Y') }}
+                                    flex items-center justify-center text-2xl shadow-lg group-hover:scale-110 transition-transform">
+                                    @if($score->game->type == 'tebak_gambar')
+                                        🖼️
+                                    @elseif($score->game->type == 'kosakata_tempat')
+                                        🏫
+                                    @elseif($score->game->type == 'pilihan_ganda')
+                                        ✅
+                                    @else
+                                        💬
+                                    @endif
                                 </div>
-                                <div class="text-xs text-gray-500">
-                                    {{ $score->completed_at->format('H:i') }}
+                                <div>
+                                    <div class="text-sm font-bold text-gray-900">
+                                        {{ $score->game->title }}
+                                    </div>
+                                    <div class="text-xs text-gray-500 font-medium">
+                                        {{ ucfirst(str_replace('_', ' ', $score->game->type)) }}
+                                    </div>
                                 </div>
-                            </td>
+                            </div>
+                        </td>
 
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                        <!-- Score -->
+                        <td class="px-6 py-4 text-center">
+                            <span class="inline-flex items-center px-5 py-2 rounded-full text-sm font-bold shadow-md
+                                @if($score->score >= 80) bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-2 border-green-300
+                                @elseif($score->score >= 60) bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 border-2 border-blue-300
+                                @else bg-gradient-to-r from-orange-100 to-red-100 text-orange-700 border-2 border-orange-300
+                                @endif
+                            ">
+                                {{ number_format($score->score, 0) }}%
+                            </span>
+                        </td>
 
-            <!-- Pagination -->
-            <div class="bg-gray-50 px-6 py-4">
-                {{ $scores->links() }}
-            </div>
+                        <!-- Correct/Total -->
+                        <td class="px-6 py-4 text-center">
+                            <span class="inline-flex items-center gap-1 text-sm font-bold text-gray-900">
+                                <span class="text-emerald-600">{{ $score->correct_answers }}</span>
+                                <span class="text-gray-400">/</span>
+                                <span class="text-gray-600">{{ $score->total_questions }}</span>
+                            </span>
+                        </td>
 
-            @else
-            
-            <!-- Empty State -->
-            <div class="p-12 text-center">
-                <div class="text-8xl mb-4">📊</div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2">Belum Ada Riwayat</h3>
-                <p class="text-gray-600 mb-6">Kamu belum memainkan game apapun. Ayo mulai bermain!</p>
-                <a href="{{ route('santri.games') }}" 
-                   class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl">
-                    🎮 Lihat Game
-                </a>
-            </div>
+                        <!-- Date -->
+                        <td class="px-6 py-4 text-center">
+                            <div class="text-sm font-semibold text-gray-900">
+                                {{ $score->completed_at->format('d M Y') }}
+                            </div>
+                            <div class="text-xs text-gray-500 font-medium">
+                                {{ $score->completed_at->format('H:i') }}
+                            </div>
+                        </td>
 
-            @endif
-
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
 
-        <!-- Back Button -->
-        <div class="mt-8 text-center">
-            <a href="{{ route('santri.dashboard') }}" 
-               class="inline-flex items-center space-x-2 text-purple-600 hover:text-purple-700 font-semibold">
-                <span>←</span>
-                <span>Kembali ke Dashboard</span>
+        <!-- Card View (Mobile) -->
+        <div class="md:hidden p-4 space-y-4">
+            @foreach($scores as $index => $score)
+            <div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-5 shadow-lg border-2 border-gray-200 hover:border-emerald-300 transition-all">
+                <!-- Header -->
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br 
+                            @if($score->game->type == 'tebak_gambar') from-pink-400 to-red-500
+                            @elseif($score->game->type == 'kosakata_tempat') from-blue-400 to-indigo-500
+                            @elseif($score->game->type == 'pilihan_ganda') from-emerald-400 to-teal-500
+                            @else from-amber-400 to-orange-500
+                            @endif
+                            flex items-center justify-center text-2xl shadow-md">
+                            @if($score->game->type == 'tebak_gambar')
+                                🖼️
+                            @elseif($score->game->type == 'kosakata_tempat')
+                                🏫
+                            @elseif($score->game->type == 'pilihan_ganda')
+                                ✅
+                            @else
+                                💬
+                            @endif
+                        </div>
+                        <div>
+                            <div class="font-bold text-gray-900">{{ $score->game->title }}</div>
+                            <div class="text-xs text-gray-500 font-medium">{{ ucfirst(str_replace('_', ' ', $score->game->type)) }}</div>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 text-xs font-bold text-emerald-700">
+                        #{{ ($scores->currentPage() - 1) * $scores->perPage() + $index + 1 }}
+                    </span>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-3 gap-3 mb-3">
+                    <div class="text-center">
+                        <div class="text-xs text-gray-500 font-semibold mb-1">Skor</div>
+                        <div class="px-3 py-1.5 rounded-lg text-sm font-bold
+                            @if($score->score >= 80) bg-gradient-to-r from-green-100 to-emerald-100 text-green-700
+                            @elseif($score->score >= 60) bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700
+                            @else bg-gradient-to-r from-orange-100 to-red-100 text-orange-700
+                            @endif
+                        ">
+                            {{ number_format($score->score, 0) }}%
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-gray-500 font-semibold mb-1">Benar</div>
+                        <div class="text-lg font-bold text-emerald-600">{{ $score->correct_answers }}/{{ $score->total_questions }}</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-gray-500 font-semibold mb-1">Tanggal</div>
+                        <div class="text-xs font-bold text-gray-900">{{ $score->completed_at->format('d M') }}</div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        <!-- Pagination -->
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-t-2 border-gray-200">
+            {{ $scores->links() }}
+        </div>
+
+        @else
+        
+        <!-- Empty State -->
+        <div class="p-12 text-center">
+            <div class="inline-block mb-6">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-emerald-300 to-teal-300 rounded-full blur-2xl opacity-30 animate-pulse"></div>
+                    <div class="relative text-9xl animate-bounce">📊</div>
+                </div>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-800 mb-3">Belum Ada Riwayat</h3>
+            <p class="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+                Kamu belum memainkan game apapun. Ayo mulai bermain dan raih skor terbaikmu! 🎯
+            </p>
+            <a href="{{ route('santri.games') }}" 
+               class="inline-flex items-center gap-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold px-8 py-4 rounded-xl transition-all shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95">
+                <span class="text-2xl">🎮</span>
+                <span>Lihat Game</span>
             </a>
         </div>
 
-    </div>
+        @endif
 
-</body>
-</html>
+    </div>
+</div>
+
+<!-- Tips Section -->
+@if($scores->count() > 0)
+<div class="mt-8 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl shadow-2xl p-8 text-white">
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div class="text-5xl">💡</div>
+        <div class="text-center sm:text-left">
+            <h3 class="text-2xl font-bold mb-1">Tips Meningkatkan Skor</h3>
+            <p class="text-emerald-50">Mainkan game secara rutin dan pelajari dari kesalahan untuk meningkatkan performamu!</p>
+        </div>
+    </div>
+</div>
+@endif
+
+<style>
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+</style>
+@endsection

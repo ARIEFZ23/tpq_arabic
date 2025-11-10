@@ -5,12 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin IdeHelperQuestion
+ */
 class Question extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'game_id',
+        'category',
         'question_text',
         'image_path',
         'correct_answer',

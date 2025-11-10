@@ -11,15 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('questions', function (Blueprint $table) {
+        Schema::create(table: 'questions', callback: function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('game_id')->constrained('games')->onDelete('cascade');
-            $table->text('question_text');
-            $table->string('image_path')->nullable(); // untuk game tebak gambar
-            $table->string('correct_answer');
-            $table->json('options')->nullable(); // untuk pilihan ganda
-            $table->string('location_name')->nullable(); // untuk kosakata tempat & percakapan
+            $table->foreignId(column: 'game_id')->nullable()->constrained(table: 'games')->onDelete(action: 'cascade');
+            $table->string('category')->nullable(); // TAMBAHKAN INI untuk Survival Quiz
+            $table->text(column: 'question_text');
+            $table->string(column: 'image_path')->nullable();
+            $table->string(column: 'correct_answer');
+            $table->json(column: 'options')->nullable();
+            $table->string(column: 'location_name')->nullable();
             $table->timestamps();
+            
+            // Index untuk performa query
+            $table->index('game_id');
+            $table->index('category');
         });
     }
 
@@ -28,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('questions');
+        Schema::dropIfExists(table: 'questions');
     }
 };

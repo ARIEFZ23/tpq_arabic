@@ -1207,3 +1207,29 @@ Documentation: COMPLETE & DETAILED 📚
 
 🙏 Alhamdulillah, project berjalan dengan baik!
 Semoga bermanfaat untuk TPQ dan santri-santri yang belajar bahasa Arab! 🕌📖
+
+
+User (Pengguna)	Keterangan 
+Admin	a.	Admin dapat melakukan login sesuai hak akses (username dan password)
+b.	Admin dapat mengelola materi kosakata Bahasa Arab
+c.	Admin dapat mengelola tingkat kesulitan permainan
+d.	Admin dapat melihat progress pembelajaran santri
+e.	Admin dapat mengelola skor dan pencapaian santri
+f.	Admin dapat melihat/cetak laporan hasil pembelajaran
+Admin dapat mengelola profil santri
+Ustadz/Ustazah	a.	Ustadz/Ustazah dapat melakukan login sesuai hak akses (username dan password) 
+b.	Ustadz/Ustazah dapat memantau perkembangan santri melalui kalkulasi skor hasil belajar 
+c.	Ustadz/Ustazah dapat melihat progress pembelajaran santri yang dibimbing 
+d.	Ustadz/Ustazah dapat mengelola materi pembelajaran sesuai kurikulum 
+e.	Ustadz/Ustazah dapat memberikan feedback dan penilaian kepada santri 
+f.	Ustadz/Ustazah dapat melihat laporan hasil pembelajaran santri
+g.	Ustadz/Ustazah dapat membantu santri dalam kesulitan pembelajaran 
+h.	Ustadz/Ustazah dapat mengatur tingkat kesulitan sesuai kemampuan santri
+Santri	a.	Santri dapat mengakses game pembelajaran tanpa login 
+b.	Santri dapat memilih tingkat kesulitan permainan 
+c.	Santri dapat bermain game kosakata Bahasa Arab 
+d.	Santri dapat melihat skor dan pencapaian pribadi 
+e.	Santri dapat mengulang materi yang telah dipelajari 
+f.	Santri dapat melihat progress pembelajaran pribadi Santri dapat menyimpan progress permainan 
+g.	Santri dapat mengakses kurikulum pembelajaran yang telah ditetapkan 
+h.	Santri dapat berinteraksi dengan fitur pembelajaran interaktif

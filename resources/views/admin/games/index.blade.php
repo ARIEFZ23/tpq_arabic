@@ -12,6 +12,18 @@
             </a>
         </div>
 
+        <!-- Success/Error Messages (DITAMBAHKAN) -->
+        @if(session('success'))
+            <div class="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg" role="alert">
+                <p>{{ session('success') }}</p>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg" role="alert">
+                <p>{{ session('error') }}</p>
+            </div>
+        @endif
+
         <!-- Games Table -->
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
@@ -22,6 +34,8 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Questions</th>
+                        <!-- DITAMBAHKAN: Kolom Status -->
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -42,7 +56,33 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $game->creator->name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $game->questions->count() }} questions</td>
+                            
+                            <!-- DITAMBAHKAN: Kolom Data Status -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($game->status == 'published')
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Published
+                                    </span>
+                                @else
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-200 text-gray-800">
+                                        Draft
+                                    </span>
+                                @endif
+                            </td>
+
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <!-- DITAMBAHKAN: Tombol Publish/Unpublish -->
+                                <form action="{{ route('admin.games.toggleStatus', $game) }}" method="POST" class="inline">
+                                    @csrf
+                                    @if($game->status == 'published')
+                                        <!-- Tombol Unpublish -->
+                                        <button type="submit" class="text-gray-500 hover:text-gray-700 mr-3" title="Unpublish (Jadikan Draft)">Draft ⤵️</button>
+                                    @else
+                                        <!-- Tombol Publish -->
+                                        <button type="submit" class="text-teal-600 hover:text-teal-900 mr-3" title="Publish (Tayangkan ke Santri)">Publish 🚀</button>
+                                    @endif
+                                </form>
+
                                 <a href="{{ route('admin.games.show', $game) }}" class="text-green-600 hover:text-green-900 mr-3">View</a>
                                 <a href="{{ route('admin.games.edit', $game) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
                                 <form action="{{ route('admin.games.destroy', $game) }}" method="POST" class="inline">
@@ -54,7 +94,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">No games found. Create your first game!</td>
+                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">No games found. Create your first game!</td>
                         </tr>
                     @endforelse
                 </tbody>
