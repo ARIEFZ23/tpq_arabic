@@ -76,7 +76,7 @@
          x-transition:enter-start="opacity-0 translate-y-4"
          x-transition:enter-end="opacity-100 translate-y-0">
         
-        <a href="{{ route('santri.sentence-builder.play') }}" 
+        <a href="{{ route('santri.games.index') }}"
            class="inline-flex items-center gap-3 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold px-8 py-4 rounded-xl transition-all shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95">
             <span class="text-2xl">🔄</span>
             <span class="text-lg">Main Lagi</span>
@@ -84,7 +84,7 @@
         
         <br>
         
-        <a href="{{ route('santri.games') }}" 
+        <a href="{{ route('santri.games.index') }}"
            class="inline-flex items-center gap-3 bg-gray-500 hover:bg-gray-600 text-white font-bold px-8 py-4 rounded-xl transition-all shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95">
             <span class="text-2xl">🎮</span>
             <span class="text-lg">Kembali ke Daftar Game</span>

@@ -5,7 +5,7 @@
 @section('content')
 @php
     // Safe variable defaults
-    $scores = $scores ?? collect();
+    $paginatedScores = $paginatedScores ?? collect();
     $totalGamesPlayed = $totalGamesPlayed ?? 0;
     $averageScore = $averageScore ?? 0;
     $bestScore = $bestScore ?? 0;
@@ -112,7 +112,7 @@
             </h2>
         </div>
 
-        @if($scores->count() > 0)
+        @if($paginatedScores->count() > 0)
         
         <!-- Table Content (Desktop) -->
         <div class="hidden md:block overflow-x-auto">
@@ -137,75 +137,105 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
-                    @foreach($scores as $index => $score)
+                    @foreach($paginatedScores as $index => $score)
                     <tr class="hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all group">
                         
                         <!-- Number -->
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 text-sm font-bold text-emerald-700 group-hover:scale-110 transition-transform">
-                                {{ ($scores->currentPage() - 1) * $scores->perPage() + $index + 1 }}
+                                {{ ($paginatedScores->currentPage() - 1) * $paginatedScores->perPage() + $index + 1 }}
                             </span>
                         </td>
 
                         <!-- Game Info -->
                         <td class="px-6 py-4">
                             <div class="flex items-center space-x-3">
-                                <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br 
-                                    @if($score->game->type == 'tebak_gambar') from-pink-400 to-red-500
-                                    @elseif($score->game->type == 'kosakata_tempat') from-blue-400 to-indigo-500
-                                    @elseif($score->game->type == 'pilihan_ganda') from-emerald-400 to-teal-500
-                                    @else from-amber-400 to-orange-500
-                                    @endif
-                                    flex items-center justify-center text-2xl shadow-lg group-hover:scale-110 transition-transform">
-                                    @if($score->game->type == 'tebak_gambar')
-                                        🖼️
-                                    @elseif($score->game->type == 'kosakata_tempat')
-                                        🏫
-                                    @elseif($score->game->type == 'pilihan_ganda')
-                                        ✅
-                                    @else
-                                        💬
-                                    @endif
-                                </div>
-                                <div>
-                                    <div class="text-sm font-bold text-gray-900">
-                                        {{ $score->game->title }}
+                                @if(is_array($score) || is_object($score))
+                                    @php
+                                        $scoreType = is_array($score) ? $score['type'] : $score->type;
+                                        $gameTitle = is_array($score) ? $score['game_title'] : $score->game_title;
+                                    @endphp
+                                    
+                                    <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br 
+                                        @if($scoreType == 'listening') from-purple-400 to-indigo-500
+                                        @elseif($scoreType == 'regular' && isset($score->game) && $score->game->type == 'tebak_gambar') from-pink-400 to-red-500
+                                        @elseif($scoreType == 'regular' && isset($score->game) && $score->game->type == 'kosakata_tempat') from-blue-400 to-indigo-500
+                                        @elseif($scoreType == 'regular' && isset($score->game) && $score->game->type == 'pilihan_ganda') from-emerald-400 to-teal-500
+                                        @else from-amber-400 to-orange-500
+                                        @endif
+                                        flex items-center justify-center text-2xl shadow-lg group-hover:scale-110 transition-transform">
+                                        @if($scoreType == 'listening')
+                                            🎧
+                                        @elseif($scoreType == 'regular' && isset($score->game))
+                                            @if($score->game->type == 'tebak_gambar')
+                                                🖼️
+                                            @elseif($score->game->type == 'kosakata_tempat')
+                                                🏫
+                                            @elseif($score->game->type == 'pilihan_ganda')
+                                                ✅
+                                            @else
+                                                💬
+                                            @endif
+                                        @else
+                                            🎮
+                                        @endif
                                     </div>
-                                    <div class="text-xs text-gray-500 font-medium">
-                                        {{ ucfirst(str_replace('_', ' ', $score->game->type)) }}
+                                    <div>
+                                        <div class="text-sm font-bold text-gray-900">
+                                            {{ $gameTitle }}
+                                        </div>
+                                        <div class="text-xs text-gray-500 font-medium">
+                                            @if($scoreType == 'listening')
+                                                Listening Game
+                                            @elseif($scoreType == 'regular' && isset($score->game))
+                                                {{ ucfirst(str_replace('_', ' ', $score->game->type)) }}
+                                            @else
+                                                Game
+                                            @endif
+                                        </div>
                                     </div>
-                                </div>
+                                @endif
                             </div>
                         </td>
 
                         <!-- Score -->
                         <td class="px-6 py-4 text-center">
+                            @php
+                                $scorePercentage = is_array($score) ? $score['score_percentage'] : $score->score_percentage;
+                            @endphp
                             <span class="inline-flex items-center px-5 py-2 rounded-full text-sm font-bold shadow-md
-                                @if($score->score >= 80) bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-2 border-green-300
-                                @elseif($score->score >= 60) bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 border-2 border-blue-300
+                                @if($scorePercentage >= 80) bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-2 border-green-300
+                                @elseif($scorePercentage >= 60) bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 border-2 border-blue-300
                                 @else bg-gradient-to-r from-orange-100 to-red-100 text-orange-700 border-2 border-orange-300
                                 @endif
                             ">
-                                {{ number_format($score->score, 0) }}%
+                                {{ number_format($scorePercentage, 0) }}%
                             </span>
                         </td>
 
                         <!-- Correct/Total -->
                         <td class="px-6 py-4 text-center">
+                            @php
+                                $correctAnswers = is_array($score) ? $score['correct_answers'] : $score->correct_answers;
+                                $totalQuestions = is_array($score) ? $score['total_questions'] : $score->total_questions;
+                            @endphp
                             <span class="inline-flex items-center gap-1 text-sm font-bold text-gray-900">
-                                <span class="text-emerald-600">{{ $score->correct_answers }}</span>
+                                <span class="text-emerald-600">{{ $correctAnswers }}</span>
                                 <span class="text-gray-400">/</span>
-                                <span class="text-gray-600">{{ $score->total_questions }}</span>
+                                <span class="text-gray-600">{{ $totalQuestions }}</span>
                             </span>
                         </td>
 
                         <!-- Date -->
                         <td class="px-6 py-4 text-center">
+                            @php
+                                $completedAt = is_array($score) ? $score['completed_at'] : $score->completed_at;
+                            @endphp
                             <div class="text-sm font-semibold text-gray-900">
-                                {{ $score->completed_at->format('d M Y') }}
+                                {{ $completedAt->format('d M Y') }}
                             </div>
                             <div class="text-xs text-gray-500 font-medium">
-                                {{ $score->completed_at->format('H:i') }}
+                                {{ $completedAt->format('H:i') }}
                             </div>
                         </td>
 
@@ -217,35 +247,58 @@
 
         <!-- Card View (Mobile) -->
         <div class="md:hidden p-4 space-y-4">
-            @foreach($scores as $index => $score)
+            @foreach($paginatedScores as $index => $score)
+            @php
+                $scoreType = is_array($score) ? $score['type'] : $score->type;
+                $gameTitle = is_array($score) ? $score['game_title'] : $score->game_title;
+                $scorePercentage = is_array($score) ? $score['score_percentage'] : $score->score_percentage;
+                $correctAnswers = is_array($score) ? $score['correct_answers'] : $score->correct_answers;
+                $totalQuestions = is_array($score) ? $score['total_questions'] : $score->total_questions;
+                $completedAt = is_array($score) ? $score['completed_at'] : $score->completed_at;
+            @endphp
             <div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-5 shadow-lg border-2 border-gray-200 hover:border-emerald-300 transition-all">
                 <!-- Header -->
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex items-center gap-3">
                         <div class="w-14 h-14 rounded-xl bg-gradient-to-br 
-                            @if($score->game->type == 'tebak_gambar') from-pink-400 to-red-500
-                            @elseif($score->game->type == 'kosakata_tempat') from-blue-400 to-indigo-500
-                            @elseif($score->game->type == 'pilihan_ganda') from-emerald-400 to-teal-500
+                            @if($scoreType == 'listening') from-purple-400 to-indigo-500
+                            @elseif($scoreType == 'regular' && isset($score->game) && $score->game->type == 'tebak_gambar') from-pink-400 to-red-500
+                            @elseif($scoreType == 'regular' && isset($score->game) && $score->game->type == 'kosakata_tempat') from-blue-400 to-indigo-500
+                            @elseif($scoreType == 'regular' && isset($score->game) && $score->game->type == 'pilihan_ganda') from-emerald-400 to-teal-500
                             @else from-amber-400 to-orange-500
                             @endif
                             flex items-center justify-center text-2xl shadow-md">
-                            @if($score->game->type == 'tebak_gambar')
-                                🖼️
-                            @elseif($score->game->type == 'kosakata_tempat')
-                                🏫
-                            @elseif($score->game->type == 'pilihan_ganda')
-                                ✅
+                            @if($scoreType == 'listening')
+                                🎧
+                            @elseif($scoreType == 'regular' && isset($score->game))
+                                @if($score->game->type == 'tebak_gambar')
+                                    🖼️
+                                @elseif($score->game->type == 'kosakata_tempat')
+                                    🏫
+                                @elseif($score->game->type == 'pilihan_ganda')
+                                    ✅
+                                @else
+                                    💬
+                                @endif
                             @else
-                                💬
+                                🎮
                             @endif
                         </div>
                         <div>
-                            <div class="font-bold text-gray-900">{{ $score->game->title }}</div>
-                            <div class="text-xs text-gray-500 font-medium">{{ ucfirst(str_replace('_', ' ', $score->game->type)) }}</div>
+                            <div class="font-bold text-gray-900">{{ $gameTitle }}</div>
+                            <div class="text-xs text-gray-500 font-medium">
+                                @if($scoreType == 'listening')
+                                    Listening Game
+                                @elseif($scoreType == 'regular' && isset($score->game))
+                                    {{ ucfirst(str_replace('_', ' ', $score->game->type)) }}
+                                @else
+                                    Game
+                                @endif
+                            </div>
                         </div>
                     </div>
                     <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 text-xs font-bold text-emerald-700">
-                        #{{ ($scores->currentPage() - 1) * $scores->perPage() + $index + 1 }}
+                        #{{ ($paginatedScores->currentPage() - 1) * $paginatedScores->perPage() + $index + 1 }}
                     </span>
                 </div>
 
@@ -254,21 +307,21 @@
                     <div class="text-center">
                         <div class="text-xs text-gray-500 font-semibold mb-1">Skor</div>
                         <div class="px-3 py-1.5 rounded-lg text-sm font-bold
-                            @if($score->score >= 80) bg-gradient-to-r from-green-100 to-emerald-100 text-green-700
-                            @elseif($score->score >= 60) bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700
+                            @if($scorePercentage >= 80) bg-gradient-to-r from-green-100 to-emerald-100 text-green-700
+                            @elseif($scorePercentage >= 60) bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700
                             @else bg-gradient-to-r from-orange-100 to-red-100 text-orange-700
                             @endif
                         ">
-                            {{ number_format($score->score, 0) }}%
+                            {{ number_format($scorePercentage, 0) }}%
                         </div>
                     </div>
                     <div class="text-center">
                         <div class="text-xs text-gray-500 font-semibold mb-1">Benar</div>
-                        <div class="text-lg font-bold text-emerald-600">{{ $score->correct_answers }}/{{ $score->total_questions }}</div>
+                        <div class="text-lg font-bold text-emerald-600">{{ $correctAnswers }}/{{ $totalQuestions }}</div>
                     </div>
                     <div class="text-center">
                         <div class="text-xs text-gray-500 font-semibold mb-1">Tanggal</div>
-                        <div class="text-xs font-bold text-gray-900">{{ $score->completed_at->format('d M') }}</div>
+                        <div class="text-xs font-bold text-gray-900">{{ $completedAt->format('d M') }}</div>
                     </div>
                 </div>
             </div>
@@ -277,7 +330,7 @@
 
         <!-- Pagination -->
         <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-t-2 border-gray-200">
-            {{ $scores->links() }}
+            {{ $paginatedScores->links() }}
         </div>
 
         @else
@@ -294,7 +347,7 @@
             <p class="text-lg text-gray-600 mb-8 max-w-md mx-auto">
                 Kamu belum memainkan game apapun. Ayo mulai bermain dan raih skor terbaikmu! 🎯
             </p>
-            <a href="{{ route('santri.games') }}" 
+            <a href="{{ route('santri.games.index') }}"
                class="inline-flex items-center gap-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold px-8 py-4 rounded-xl transition-all shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95">
                 <span class="text-2xl">🎮</span>
                 <span>Lihat Game</span>
@@ -307,7 +360,7 @@
 </div>
 
 <!-- Tips Section -->
-@if($scores->count() > 0)
+@if($paginatedScores->count() > 0)
 <div class="mt-8 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl shadow-2xl p-8 text-white">
     <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
         <div class="text-5xl">💡</div>
@@ -325,4 +378,5 @@
     100% { background-position: 1000px 0; }
 }
 </style>
+
 @endsection

@@ -32,6 +32,8 @@ class User extends Authenticatable
         'total_games_completed',
         'current_badge',
         'profile_photo',
+        'total_points', // Kolom baru untuk game listening
+        'total_exp',    // Kolom baru untuk game listening
     ];
 
     /**
@@ -45,7 +47,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Get attributes that should be cast.
      *
      * @return array<string, string>
      */
@@ -56,6 +58,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // ============================================
+    // RELATIONSHIPS
+    // ============================================
 
     /**
      * Relationship: User has many scores
@@ -72,6 +78,26 @@ class User extends Authenticatable
     {
         return $this->hasMany(Game::class, 'created_by');
     }
+
+    /**
+     * Relationship: User has many game sessions (for listening game)
+     */
+    public function gameSessions()
+    {
+        return $this->hasMany(GameSession::class);
+    }
+
+    /**
+     * Relationship: User has one leaderboard entry
+     */
+    public function leaderboardEntry()
+    {
+        return $this->hasOne(LeaderboardEntry::class);
+    }
+
+    // ============================================
+    // ROLE CHECKERS
+    // ============================================
 
     /**
      * Check if user is admin
@@ -112,6 +138,10 @@ class User extends Authenticatable
     {
         return in_array($this->role, ['ustadz', 'ustadzah']);
     }
+
+    // ============================================
+    // ACCESSORS & HELPERS
+    // ============================================
 
     /**
      * Get profile photo URL

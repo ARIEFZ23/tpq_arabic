@@ -7,6 +7,8 @@ use App\Models\Question;
 use App\Models\Score;
 use App\Models\AnswerLog;
 use App\Models\SurvivalHighScore;
+use App\Models\GameSession;
+use App\Models\ListeningQuestion;
 use App\Helpers\LevelSystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -66,8 +68,17 @@ class SantriController extends Controller
         
         // Ambil game Sentence Builder
         $sentenceBuilderGame = Game::where('type', 'sentence_builder')->first();
-        
-        return view('santri.games.index', compact('games', 'sentenceBuilderGame'));
+
+        // TAMBAHAN: Ambil data game Listening Comprehension
+        $listeningComprehensionGame = (object) [
+            'id' => 'listening-comprehension', // ID unik untuk routing
+            'title' => 'Mendengarkan dan Bermain',
+            'description' => 'Dengarkan dan pilih arti kalimat yang benar!',
+            'type' => 'listening_comprehension',
+            'completed' => true, // Selalu tampilkan, karena tidak ada skornya di tabel `scores`
+        ];
+
+        return view('santri.games.index', compact('games', 'sentenceBuilderGame', 'listeningComprehensionGame'));
     }
 
     public function playGame($id)
@@ -77,7 +88,7 @@ class SantriController extends Controller
             ->findOrFail($id);
         
         if ($game->questions->count() == 0) {
-            return redirect()->route('santri.games')
+            return redirect()->route('santri.games.index')
                 ->with('error', 'Game ini belum memiliki soal.');
         }
         
@@ -99,7 +110,7 @@ class SantriController extends Controller
             $totalQuestions = $game->questions->count();
             
             if ($totalQuestions == 0) {
-                return redirect()->route('santri.games')
+                return redirect()->route('santri.games.index')
                     ->with('error', 'Game tidak memiliki soal.');
             }
             
@@ -163,7 +174,7 @@ class SantriController extends Controller
                 ]);
                 
         } catch (\Exception $e) {
-            return redirect()->route('santri.games')
+            return redirect()->route('santri.games.index')
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
@@ -195,21 +206,76 @@ class SantriController extends Controller
         $user = Auth::user();
         /** @var \App\Models\User $user */
         
+        // ✅ GABUNGKAN: Score dari tabel `scores` + GameSession dari tabel `game_sessions`
         $scores = Score::where('user_id', $user->id)
             ->with('game')
             ->orderBy('completed_at', 'desc')
-            ->paginate(10);
+            ->get()
+            ->map(function($score) {
+                return [
+                    'type' => 'regular',
+                    'game_title' => $score->game->title ?? 'Unknown Game',
+                    'score_percentage' => $score->score,
+                    'correct_answers' => $score->correct_answers,
+                    'total_questions' => $score->total_questions,
+                    'completed_at' => $score->completed_at,
+                ];
+            });
+        
+        // ✅ TAMBAH: Ambil data Listening Game dari tabel `game_sessions`
+        $listeningSessions = GameSession::where('user_id', $user->id)
+            ->where('questionable_type', ListeningQuestion::class)
+            ->select(
+                DB::raw('DATE(created_at) as session_date'),
+                DB::raw('SUM(points_earned) as total_points'),
+                DB::raw('SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END) as correct_answers'),
+                DB::raw('COUNT(*) as total_questions')
+            )
+            ->groupBy('session_date')
+            ->orderBy('session_date', 'desc')
+            ->get()
+            ->map(function($session) {
+                $scorePercentage = $session->total_questions > 0 
+                    ? round(($session->correct_answers / $session->total_questions) * 100, 2) 
+                    : 0;
+                
+                return [
+                    'type' => 'listening',
+                    'game_title' => 'Listening Game',
+                    'score_percentage' => $scorePercentage,
+                    'correct_answers' => $session->correct_answers,
+                    'total_questions' => $session->total_questions,
+                    'completed_at' => \Carbon\Carbon::parse($session->session_date),
+                ];
+            });
+        
+        // ✅ GABUNGKAN & SORT by date
+        $allScores = $scores->concat($listeningSessions)
+            ->sortByDesc('completed_at')
+            ->values();
+        
+        // ✅ PAGINATE manual (karena sudah di-merge)
+        $currentPage = request()->get('page', 1);
+        $perPage = 10;
+        $paginatedScores = new \Illuminate\Pagination\LengthAwarePaginator(
+            $allScores->forPage($currentPage, $perPage),
+            $allScores->count(),
+            $perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
         
         $survivalHighScore = SurvivalHighScore::where('user_id', $user->id)->first();
         
-        $totalGamesPlayed = Score::where('user_id', $user->id)->count();
-        $averageScore = $totalGamesPlayed > 0
-            ? Score::where('user_id', $user->id)->avg(DB::raw('(correct_answers / total_questions) * 100'))
+        // ✅ HITUNG statistik (gabungan)
+        $totalGamesPlayed = $allScores->count();
+        $averageScore = $allScores->count() > 0
+            ? $allScores->avg('score_percentage')
             : 0;
-        $bestScore = Score::where('user_id', $user->id)->max('score') ?? 0;
+        $bestScore = $allScores->max('score_percentage') ?? 0;
         
         return view('santri.scores.index', compact(
-            'scores', 
+            'paginatedScores',
             'totalGamesPlayed', 
             'averageScore', 
             'bestScore',
@@ -217,21 +283,56 @@ class SantriController extends Controller
         ));
     }
 
+    /**
+     * Menampilkan halaman profile santri dengan data yang lengkap
+     */
     public function profile()
     {
         $user = Auth::user();
         /** @var \App\Models\User $user */
         
-        $levelInfo = LevelSystem::getLevelInfo($user->experience_points ?? 0);
-        $badge = LevelSystem::getBadge($user->total_games_completed ?? 0);
+        // Hitung total games completed berdasarkan scores
+        $totalGamesCompleted = Score::where('user_id', $user->id)->count();
         
+        // Hitung current badge berdasarkan total games completed
+        $currentBadge = $this->calculateBadge($totalGamesCompleted);
+        
+        // Siapkan data user untuk view dengan semua field yang diperlukan
+        $userData = [
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'class_id' => $user->class_id,
+            'profile_photo' => $user->profile_photo,
+            'level' => $user->level ?? 1,
+            'experience_points' => $user->experience_points ?? 0,
+            'total_games_completed' => $totalGamesCompleted,
+            'current_badge' => $currentBadge
+        ];
+
+        // Ambil recent scores untuk aktivitas terakhir
         $recentScores = Score::where('user_id', $user->id)
             ->with('game')
             ->orderBy('completed_at', 'desc')
             ->take(5)
             ->get();
-        
-        return view('santri.profile', compact('user', 'levelInfo', 'badge', 'recentScores'));
+
+        return view('santri.profile', [
+            'user' => (object)$userData, // Convert array to object untuk kompatibilitas dengan view
+            'recentScores' => $recentScores
+        ]);
+    }
+
+    /**
+     * Calculate badge based on total games completed
+     */
+    private function calculateBadge($totalGames)
+    {
+        if ($totalGames >= 100) return 'diamond';
+        if ($totalGames >= 50) return 'gold';
+        if ($totalGames >= 25) return 'silver';
+        if ($totalGames >= 10) return 'bronze';
+        return 'none';
     }
 
     public function updateProfilePhoto(Request $request)
@@ -533,12 +634,13 @@ class SantriController extends Controller
         $correctAnswers = session('sentence_builder_correct', 0);
         $totalQuestions = session('sentence_builder_total', 0);
         $xpEarned = session('sentence_builder_xp', 0);
+
         $newLevel = session('sentence_builder_level', $user->level ?? 1);
         $levelName = session('sentence_builder_level_name', 'Pemula');
         
         // Redirect jika tidak ada data session
         if (!session()->has('sentence_builder_score')) {
-            return redirect()->route('santri.games')
+            return redirect()->route('santri.games.index')
                 ->with('error', 'Data hasil tidak ditemukan.');
         }
         

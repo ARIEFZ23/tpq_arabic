@@ -32,6 +32,98 @@
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
     
     <!-- ========================================== -->
+    <!-- GAME LISTENING COMPREHENSION (BARU) -->
+    <!-- ========================================== -->
+    <div class="group"
+         x-data="{ show: false }" 
+         x-init="setTimeout(() => show = true, 150)"
+         x-show="show"
+         x-transition:enter="transition ease-out duration-700"
+         x-transition:enter-start="opacity-0 scale-95">
+        
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:scale-105 border-2 border-teal-200 h-full flex flex-col">
+            
+            <!-- Listening Comprehension Header -->
+            <div class="relative bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-500 p-8 text-center text-white overflow-hidden">
+                
+                <!-- Decorative circles -->
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+                
+                <!-- Icon with animation -->
+                <div class="relative text-7xl mb-4 transform group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+                    🎧
+                </div>
+                
+                <!-- Title -->
+                <h3 class="relative text-2xl font-bold mb-2 drop-shadow-lg">{{ $listeningComprehensionGame->title }}</h3>
+                
+                <!-- Description -->
+                <p class="relative text-sm opacity-95 leading-relaxed min-h-[2.5rem]">
+                    {{ $listeningComprehensionGame->description }}
+                </p>
+
+                <!-- Shine effect on hover -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+            </div>
+
+            <!-- Listening Comprehension Body -->
+            <div class="p-6 flex-1 flex flex-col">
+                
+                <!-- Stats with Icons -->
+                <div class="grid grid-cols-2 gap-4 mb-5">
+                    <div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 text-center border-2 border-teal-200 transform group-hover:scale-105 transition-transform">
+                        <div class="text-3xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+                            310
+                        </div>
+                        <div class="text-xs text-gray-600 font-semibold mt-1 flex items-center justify-center gap-1">
+                            <span>🎧</span>
+                            <span>Audio</span>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 text-center border-2 border-blue-200 transform group-hover:scale-105 transition-transform">
+                        <div class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                            4
+                        </div>
+                        <div class="text-xs text-gray-600 font-semibold mt-1 flex items-center justify-center gap-1">
+                            <span>🎯</span>
+                            <span>Level</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Badges -->
+                <div class="mb-5 flex flex-col gap-2">
+                    <div class="flex items-center gap-2 bg-gradient-to-r from-teal-50 to-cyan-50 px-4 py-2 rounded-lg border-2 border-teal-200">
+                        <span class="text-lg">🎧</span>
+                        <span class="text-xs font-bold text-gray-700">Pilihan Ganda</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-lg border-2 border-blue-200">
+                        <span class="text-lg">🏆</span>
+                        <span class="text-xs font-bold text-gray-700">Sistem Skor</span>
+                    </div>
+                </div>
+
+                <!-- Play Button -->
+                <div class="mt-auto">
+                    <a href="{{ route('santri.listening.index') }}" 
+                       class="block w-full bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white text-center font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 relative overflow-hidden group/btn">
+                        <span class="relative z-10 flex items-center justify-center gap-2">
+                            <span class="text-lg">🎧</span>
+                            <span>Main Sekarang</span>
+                        </span>
+                        <!-- Shine effect -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    
+    <!-- ========================================== -->
     <!-- GAME BAWAAN: SURVIVAL QUIZ -->
     <!-- ========================================== -->
     <div class="group"
@@ -99,12 +191,12 @@
 
                 <!-- Feature Badges -->
                 <div class="mb-5 flex flex-col gap-2">
-                    <div class="flex items-center gap-2 bg-gradient-to-r from-red-50 to-orange-50 px-4 py-2 rounded-lg border border-red-200">
+                    <div class="flex items-center gap-2 bg-gradient-to-r from-red-50 to-orange-50 px-4 py-2 rounded-lg border-2 border-red-200">
                         <span class="text-lg">🏆</span>
                         <span class="text-xs font-bold text-gray-700">High Score System</span>
                     </div>
-                    <div class="flex items-center gap-2 bg-gradient-to-r from-yellow-50 to-amber-50 px-4 py-2 rounded-lg border border-yellow-200">
-                        <span class="text-lg">🔥</span>
+                    <div class="flex items-center gap-2 bg-gradient-to-r from-yellow-50 to-amber-50 px-4 py-2 rounded-lg border-2 border-yellow-200">
+                        <span class="text-lg">⚡</span>
                         <span class="text-xs font-bold text-gray-700">10 Soal Random per Game</span>
                     </div>
                 </div>
@@ -197,11 +289,11 @@
 
                 <!-- Feature Badges -->
                 <div class="mb-5 flex flex-col gap-2">
-                    <div class="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-2 rounded-lg border border-purple-200">
+                    <div class="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-2 rounded-lg border-2 border-purple-200">
                         <span class="text-lg">🎯</span>
                         <span class="text-xs font-bold text-gray-700">Jumlah Ismiyah & Filiyyah</span>
                     </div>
-                    <div class="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-cyan-50 px-4 py-2 rounded-lg border border-blue-200">
+                    <div class="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-cyan-50 px-4 py-2 rounded-lg border-2 border-blue-200">
                         <span class="text-lg">🖱️</span>
                         <span class="text-xs font-bold text-gray-700">Drag & Drop Interface</span>
                     </div>
@@ -376,7 +468,6 @@
             </div>
         </div>
     </div>
-
     @endforelse
 
 </div>

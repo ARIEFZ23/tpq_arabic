@@ -20,11 +20,19 @@ class Game extends Model
     ];
 
     /**
-     * Relationship: Game has many questions
+     * Relationship: Game has many questions (generic)
      */
     public function questions()
     {
         return $this->hasMany(Question::class);
+    }
+
+    /**
+     * Relationship: Game has many listening questions (specific)
+     */
+    public function listeningQuestions()
+    {
+        return $this->hasMany(ListeningQuestion::class);
     }
 
     /**

@@ -354,7 +354,7 @@
                         <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                     </a>
                     
-                    <a href="{{ route('santri.dashboard') }}" 
+                    <a href="{{ route('santri.games.index') }}" 
                        class="relative bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-center font-black py-5 rounded-xl shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 overflow-hidden group">
                         <span class="relative z-10 flex items-center justify-center gap-2 text-lg">
                             🏠 Dashboard

@@ -1233,3 +1233,489 @@ e.	Santri dapat mengulang materi yang telah dipelajari
 f.	Santri dapat melihat progress pembelajaran pribadi Santri dapat menyimpan progress permainan 
 g.	Santri dapat mengakses kurikulum pembelajaran yang telah ditetapkan 
 h.	Santri dapat berinteraksi dengan fitur pembelajaran interaktif
+
+
+@extends('layouts.santri')
+
+@push('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    :root {
+        --primary: #1e40af;
+        --primary-dark: #1e3a8a;
+        --secondary: #06b6d4;
+        --accent: #f43f5e;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --dark: #0f172a;
+        --light: #f8fafc;
+        --border: #e2e8f0;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --gradient-accent: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    }
+
+    /* Hero Section */
+    .modern-hero {
+        background: white;
+        border-radius: 24px;
+        padding: 4rem 3rem;
+        text-align: center;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .modern-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: var(--gradient-primary);
+    }
+
+    .modern-hero h2 {
+        font-size: 3rem;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        letter-spacing: -0.02em;
+    }
+
+    .modern-hero p {
+        font-size: 1.25rem;
+        color: #64748b;
+        max-width: 700px;
+        margin: 0 auto 2.5rem;
+        line-height: 1.8;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .modern-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: var(--transition);
+        cursor: pointer;
+        border: none;
+        box-shadow: var(--shadow);
+    }
+
+    .modern-btn:not(.modern-btn-accent) {
+        background: var(--gradient-primary);
+        color: white;
+    }
+
+    .modern-btn:not(.modern-btn-accent):hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .modern-btn-accent {
+        background: white;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+    }
+
+    .modern-btn-accent:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Features Section */
+    .modern-features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .modern-feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        text-align: center;
+        transition: var(--transition);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+    }
+
+    .modern-feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+        border-color: var(--primary);
+    }
+
+    .modern-feature-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--gradient-primary);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: white;
+        transition: var(--transition);
+    }
+
+    .modern-feature-card:hover .modern-feature-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .modern-feature-card h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 1rem;
+    }
+
+    .modern-feature-card p {
+        color: #64748b;
+        line-height: 1.7;
+        font-size: 1rem;
+    }
+
+    /* Dashboard Section */
+    .modern-dashboard {
+        background: white;
+        border-radius: 24px;
+        padding: 3rem;
+        box-shadow: var(--shadow-xl);
+        margin-bottom: 3rem;
+    }
+
+    .modern-dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .modern-dashboard-header h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark);
+    }
+
+    /* Stats Cards */
+    .modern-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .modern-stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        transition: var(--transition);
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .modern-stat-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        transition: var(--transition);
+    }
+
+    .modern-stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .modern-stat-card:hover::before {
+        top: -30%;
+        right: -30%;
+    }
+
+    .modern-stat-card:nth-child(2) {
+        background: var(--gradient-success);
+    }
+
+    .modern-stat-card:nth-child(3) {
+        background: var(--gradient-accent);
+    }
+
+    .modern-stat-card:nth-child(4) {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .modern-stat-value {
+        font-size: 3rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 0.5rem;
+        position: relative;
+    }
+
+    .modern-stat-label {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+        position: relative;
+    }
+
+    /* Table */
+    .modern-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .modern-table thead {
+        background: var(--gradient-primary);
+    }
+
+    .modern-table thead th {
+        padding: 1.25rem 1.5rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .modern-table tbody tr {
+        background: white;
+        transition: var(--transition);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .modern-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .modern-table tbody tr:hover {
+        background: #f8fafc;
+        transform: scale(1.01);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .modern-table tbody td {
+        padding: 1.25rem 1.5rem;
+        color: var(--dark);
+        font-size: 0.95rem;
+    }
+
+    .modern-table tbody td:first-child {
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .modern-hero {
+            padding: 2.5rem 1.5rem;
+        }
+
+        .modern-hero h2 {
+            font-size: 2rem;
+        }
+
+        .modern-hero p {
+            font-size: 1rem;
+        }
+
+        .modern-dashboard {
+            padding: 1.5rem;
+        }
+
+        .modern-dashboard-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .modern-stat-value {
+            font-size: 2.5rem;
+        }
+
+        .modern-table {
+            font-size: 0.875rem;
+        }
+
+        .modern-table thead th,
+        .modern-table tbody td {
+            padding: 1rem;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .modern-features {
+            grid-template-columns: 1fr;
+        }
+
+        .modern-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-buttons {
+            flex-direction: column;
+        }
+
+        .modern-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .modern-table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
+
+    /* Smooth Scroll */
+    html {
+        scroll-behavior: smooth;
+    }
+</style>
+@endpush
+
+@section('content')
+{{-- Hero Section --}}
+<section class="modern-hero">
+    <h2>Sistem Manajemen TPQ Arabic</h2>
+    <p>Platform modern untuk mengelola data santri, pembelajaran, dan aktivitas TPQ dengan antarmuka yang elegan dan intuitif.</p>
+    <div class="hero-buttons">
+        <a href="{{ route('santri.dashboard') }}" class="modern-btn">
+            <i class="fas fa-users"></i>
+            Kelola Data Santri
+        </a>
+        <a href="#dashboard-stats" class="modern-btn modern-btn-accent">
+            <i class="fas fa-chart-bar"></i>
+            Lihat Statistik
+        </a>
+    </div>
+</section>
+
+{{-- Features Section --}}
+<section class="modern-features">
+    <div class="modern-feature-card">
+        <div class="modern-feature-icon">
+            <i class="fas fa-user-graduate"></i>
+        </div>
+        <h3>Manajemen Santri</h3>
+        <p>Kelola data santri secara lengkap mulai dari profil, perkembangan belajar, hingga laporan hasil pembelajaran.</p>
+    </div>
+    <div class="modern-feature-card">
+        <div class="modern-feature-icon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <h3>Analitik Lengkap</h3>
+        <p>Pantau perkembangan TPQ dengan dashboard analitik yang menyajikan data secara real-time dan mudah dipahami.</p>
+    </div>
+    <div class="modern-feature-card">
+        <div class="modern-feature-icon">
+            <i class="fas fa-file-pdf"></i>
+        </div>
+        <h3>Laporan Otomatis</h3>
+        <p>Generate laporan berkala secara otomatis untuk evaluasi pembelajaran dan administrasi TPQ.</p>
+    </div>
+</section>
+
+{{-- Dashboard Section --}}
+<section class="modern-dashboard" id="dashboard-stats">
+    <div class="modern-dashboard-header">
+        <h2>Dashboard Statistik</h2>
+        <a href="#" class="modern-btn">
+            <i class="fas fa-download"></i>
+            Ekspor Laporan
+        </a>
+    </div>
+    
+    <div class="modern-stats">
+        <div class="modern-stat-card">
+            <div class="modern-stat-value">150</div>
+            <div class="modern-stat-label">Total Santri</div>
+        </div>
+        <div class="modern-stat-card">
+            <div class="modern-stat-value">85%</div>
+            <div class="modern-stat-label">Kehadiran Bulan Ini</div>
+        </div>
+        <div class="modern-stat-card">
+            <div class="modern-stat-value">12</div>
+            <div class="modern-stat-label">Pengajar Aktif</div>
+        </div>
+        <div class="modern-stat-card">
+            <div class="modern-stat-value">94%</div>
+            <div class="modern-stat-label">Kepuasan Orang Tua</div>
+        </div>
+    </div>
+    
+    <table class="modern-table">
+        <thead>
+            <tr>
+                <th><i class="fas fa-chalkboard-teacher"></i> Kelas</th>
+                <th><i class="fas fa-users"></i> Jumlah Santri</th>
+                <th><i class="fas fa-user-tie"></i> Pengajar</th>
+                <th><i class="fas fa-calendar-alt"></i> Jadwal</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Iqro 1</td>
+                <td>25</td>
+                <td>Ust. Ahmad</td>
+                <td>Senin & Rabu, 08:00-10:00</td>
+            </tr>
+            <tr>
+                <td>Iqro 2</td>
+                <td>22</td>
+                <td>Ust. Fatimah</td>
+                <td>Selasa & Kamis, 08:00-10:00</td>
+            </tr>
+            <tr>
+                <td>Al-Quran</td>
+                <td>35</td>
+                <td>Ust. Abdullah</td>
+                <td>Senin - Kamis, 10:00-12:00</td>
+            </tr>
+            <tr>
+                <td>Tahfidz</td>
+                <td>18</td>
+                <td>Ust. Muhammad</td>
+                <td>Jumat, 08:00-11:00</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+@endsection

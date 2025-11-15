@@ -12,14 +12,19 @@ class CheckRole
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  string  ...$roles
      */
-    public function handle(Request $request, Closure $next, string $role): Response
+    // ====================================================================
+    // PERBAIKAN BUG #3: Mengizinkan multiple roles (ustadz, ustadzah)
+    // ====================================================================
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
         if (!auth()->check()) {
             return redirect('/login');
         }
 
-        if (auth()->user()->role !== $role) {
+        // Cek apakah role user ada DI DALAM array $roles
+        if (!in_array(auth()->user()->role, $roles)) {
             abort(403, 'Unauthorized action.');
         }
 

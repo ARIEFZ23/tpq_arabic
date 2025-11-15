@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') - TPQ Arabic Learning</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
-    
+
     <style>
         body { font-family: 'Poppins', sans-serif; }
         .font-arabic { font-family: 'Amiri', serif; }
-        
+
         @keyframes float {
             0%, 100% { transform: translateY(0) rotate(0deg); }
             25% { transform: translateY(-10px) rotate(1deg); }
@@ -24,7 +24,7 @@
             75% { transform: translateY(-10px) rotate(-1deg); }
         }
         .animate-float { animation: float 4s ease-in-out infinite; }
-        
+
         @keyframes shimmer {
             0% { background-position: -1000px 0; }
             100% { background-position: 1000px 0; }
@@ -34,27 +34,25 @@
             background-size: 1000px 100%;
             animation: shimmer 2s infinite;
         }
-        
+
         .arabic-text {
             font-family: 'Amiri', serif;
             direction: rtl;
         }
     </style>
+    @stack('styles') {{-- Tambahkan ini untuk style per halaman --}}
 </head>
 <body class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 min-h-screen overflow-x-hidden">
-    
-    <!-- Decorative Background -->
+
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div class="absolute top-20 left-10 w-64 h-64 bg-emerald-300/20 rounded-full blur-3xl animate-float"></div>
         <div class="absolute bottom-20 right-10 w-80 h-80 bg-teal-300/20 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
         <div class="absolute top-1/2 left-1/3 w-72 h-72 bg-cyan-300/20 rounded-full blur-3xl animate-float" style="animation-delay: 4s;"></div>
     </div>
 
-    <!-- Navigation Bar -->
     <nav x-data="{ open: false, userMenuOpen: false }" class="relative bg-white/90 backdrop-blur-md shadow-lg z-20 sticky top-0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <!-- Logo -->
                 <a href="{{ route('santri.dashboard') }}" class="flex items-center space-x-3 group">
                     <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                         <span class="text-2xl">🕌</span>
@@ -63,8 +61,7 @@
                         TPQ Arabic
                     </span>
                 </a>
-                
-                <!-- Navigation Links (Desktop) -->
+
                 <div class="hidden lg:flex items-center space-x-2">
                     <a href="{{ route('santri.dashboard') }}" 
                        class="px-4 py-2 rounded-lg font-medium transition-all
@@ -73,15 +70,15 @@
                                   : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50' }}">
                         🏠 Dashboard
                     </a>
-                    
-                    <a href="{{ route('santri.games') }}" 
+
+                    <a href="{{ route('santri.games.index') }}" 
                        class="px-4 py-2 rounded-lg font-medium transition-all
-                              {{ request()->routeIs('santri.games*') 
+                              {{ request()->routeIs('santri.games*') || request()->routeIs('santri.listening*')
                                   ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg' 
                                   : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50' }}">
                         🎮 Games
                     </a>
-                    
+
                     <a href="{{ route('santri.scores') }}" 
                        class="px-4 py-2 rounded-lg font-medium transition-all
                               {{ request()->routeIs('santri.scores') 
@@ -89,7 +86,7 @@
                                   : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50' }}">
                         📊 Scores
                     </a>
-                    
+
                     <a href="{{ route('santri.profile') }}" 
                        class="px-4 py-2 rounded-lg font-medium transition-all
                               {{ request()->routeIs('santri.profile') 
@@ -97,8 +94,7 @@
                                   : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50' }}">
                         👤 Profile
                     </a>
-                    
-                    <!-- LINK PERINGKAT BARU -->
+
                     <a href="{{ route('santri.leaderboard') }}" 
                        class="px-4 py-2 rounded-lg font-medium transition-all
                               {{ request()->routeIs('santri.leaderboard') 
@@ -108,7 +104,6 @@
                     </a>
                 </div>
 
-                <!-- User Menu (Desktop) -->
                 <div class="hidden lg:flex items-center">
                     <div class="relative">
                         <button @click="userMenuOpen = !userMenuOpen" 
@@ -138,17 +133,17 @@
                              x-transition:leave-end="opacity-0 scale-95"
                              class="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl py-2 z-50 border-2 border-emerald-200"
                              style="display: none;">
-                            
+
                             <div class="px-4 py-3 border-b border-emerald-100">
                                 <p class="text-sm font-semibold text-gray-700">{{ auth()->user()->name }}</p>
                                 <p class="text-xs text-emerald-600 font-medium mt-1">Level {{ auth()->user()->level ?? 1 }} • {{ auth()->user()->experience_points ?? 0 }} XP</p>
                             </div>
-                            
+
                             <a href="{{ route('santri.profile') }}" 
                                class="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors font-medium">
                                 <span>👤</span> My Profile
                             </a>
-                            
+
                             <form method="POST" action="{{ route('logout') }}" class="border-t border-emerald-100 mt-2 pt-2">
                                 @csrf
                                 <button type="submit" 
@@ -160,7 +155,6 @@
                     </div>
                 </div>
 
-                <!-- Hamburger Menu (Mobile) -->
                 <div class="lg:hidden flex items-center">
                     <button @click="open = !open" class="p-2 rounded-lg text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +166,6 @@
             </div>
         </div>
 
-        <!-- Mobile Menu -->
         <div :class="{'block': open, 'hidden': !open}" class="hidden lg:hidden bg-white/95 backdrop-blur-md shadow-lg border-t border-gray-100">
             <div class="pt-2 pb-3 space-y-1 px-4">
                 <a href="{{ route('santri.dashboard') }}" 
@@ -182,13 +175,15 @@
                               : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600' }}">
                     🏠 Dashboard
                 </a>
-                <a href="{{ route('santri.games') }}" 
+
+                <a href="{{ route('santri.games.index') }}" 
                    class="block px-4 py-2 rounded-lg font-medium transition-colors
-                          {{ request()->routeIs('santri.games*') 
+                          {{ request()->routeIs('santri.games*') || request()->routeIs('santri.listening*')
                               ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg' 
                               : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600' }}">
                     🎮 Games
                 </a>
+
                 <a href="{{ route('santri.scores') }}" 
                    class="block px-4 py-2 rounded-lg font-medium transition-colors
                           {{ request()->routeIs('santri.scores') 
@@ -203,17 +198,15 @@
                               : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600' }}">
                     👤 Profile
                 </a>
-                <!-- LINK PERINGKAT MOBILE -->
                 <a href="{{ route('santri.leaderboard') }}" 
                    class="block px-4 py-2 rounded-lg font-medium transition-colors
                           {{ request()->routeIs('santri.leaderboard') 
                               ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg' 
-                              : 'text-gray-600 hover:bg-yellow-50 hover:text-yellow-600' }}">
+                              : 'text-gray-600 hover:text-yellow-50 hover:text-yellow-600' }}">
                     🏆 Peringkat
                 </a>
             </div>
-            
-            <!-- Mobile User Menu -->
+
             <div class="pt-4 pb-4 border-t border-gray-200 px-4">
                 <div class="flex items-center gap-3 mb-3 px-4">
                     @if(auth()->user()->profile_photo)
@@ -240,7 +233,6 @@
         </div>
     </nav>
 
-    <!-- Flash Messages -->
     @if(session('success'))
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 z-10">
             <div class="bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-400 text-green-700 px-5 py-4 rounded-2xl shadow-lg flex items-center gap-3" role="alert">
@@ -259,12 +251,10 @@
         </div>
     @endif
 
-    <!-- Main Content -->
     <main class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
         @yield('content')
     </main>
 
-    <!-- Footer -->
     <footer class="relative bg-white/80 backdrop-blur-sm border-t-2 border-emerald-200 mt-12 z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
             <p class="text-gray-600 font-medium">© {{ date('Y') }} TPQ Arabic Learning. Made with ❤️ for better learning.</p>
@@ -272,5 +262,6 @@
         </div>
     </footer>
 
+    @stack('scripts')
 </body>
 </html>

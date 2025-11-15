@@ -398,7 +398,7 @@
                     <div class="text-5xl sm:text-6xl mb-4 animate-bounce">🎮</div>
                     <h3 class="text-lg sm:text-xl font-bold text-gray-700 mb-2">Belum Ada Aktivitas</h3>
                     <p class="text-gray-600 mb-6 text-sm sm:text-base">Mulai bermain untuk melihat aktivitasmu di sini!</p>
-                    <a href="{{ route('santri.games') }}" 
+                    <a href="{{ route('santri.games.index') }}"
                        class="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold px-6 sm:px-8 py-3 rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 active:scale-95 shadow-lg">
                         <span>🎮</span> Mulai Bermain Sekarang! <span>✨</span>
                     </a>
