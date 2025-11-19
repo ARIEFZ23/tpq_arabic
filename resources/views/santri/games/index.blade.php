@@ -50,6 +50,11 @@
                 <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
                 <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
                 
+                <!-- Badge "Game Bawaan" -->
+                <div class="absolute top-4 right-4 bg-yellow-400 text-purple-700 px-3 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse">
+                    ⭐ BUILT-IN
+                </div>
+                
                 <!-- Icon with animation -->
                 <div class="relative text-7xl mb-4 transform group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
                     🎧

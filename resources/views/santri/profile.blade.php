@@ -29,98 +29,93 @@
         <div class="relative flex flex-col md:flex-row items-center md:items-start md:space-x-6 space-y-4 md:space-y-0">
             
             <!-- Avatar dengan Upload - Enhanced -->
-            <div class="relative group flex-shrink-0">
-                <div class="absolute -inset-1 bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+<!-- Avatar dengan Upload - Enhanced -->
+<div class="relative group flex-shrink-0">
+    <div class="absolute -inset-1 bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
+    
+    @if($user->profile_photo)
+        <img src="{{ asset('storage/' . $user->profile_photo) }}" 
+             alt="Profile Photo" 
+             class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-white shadow-xl">
+    @else
+        <div class="relative w-28 h-28 sm:w-32 sm:h-32 bg-white rounded-full flex items-center justify-center text-5xl sm:text-6xl border-4 border-white shadow-xl">
+            {{ $user->role == 'santri_putra' ? '👦' : '👧' }}
+        </div>
+    @endif
+    
+    <!-- Upload Button Overlay -->
+    <div class="absolute inset-0 bg-black bg-opacity-60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+         x-data="{ showModal: false }">
+        <button @click="showModal = true" class="text-white text-sm font-bold px-3 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30">
+            📸 Ubah
+        </button>
+        
+        <!-- Modal Upload Photo -->
+        <div x-show="showModal" 
+             @click.away="showModal = false"
+             x-transition
+             class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+             style="display: none;">
+            <div class="bg-white rounded-2xl p-6 max-w-md w-full" @click.stop>
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span class="text-2xl">📸</span> Upload Foto Profil
+                </h3>
+                
+                <form action="{{ route('santri.profile.photo.update') }}" 
+                      method="POST" 
+                      enctype="multipart/form-data"
+                      class="space-y-4">
+                    @csrf
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Pilih Foto
+                        </label>
+                        <input type="file" 
+                               name="profile_photo" 
+                               accept="image/*"
+                               required
+                               class="block w-full text-sm text-gray-600
+                                      file:mr-4 file:py-2.5 file:px-4
+                                      file:rounded-lg file:border-0
+                                      file:text-sm file:font-semibold
+                                      file:bg-emerald-50 file:text-emerald-700
+                                      hover:file:bg-emerald-100 cursor-pointer">
+                        <p class="text-xs text-gray-500 mt-2">
+                            ℹ️ Format: JPG, PNG, GIF • Maksimal: 2MB
+                        </p>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button type="submit" 
+                                class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-3 px-4 rounded-xl">
+                            ✨ Upload
+                        </button>
+                        <button type="button" 
+                                @click="showModal = false"
+                                class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-4 rounded-xl">
+                            Batal
+                        </button>
+                    </div>
+                </form>
                 
                 @if($user->profile_photo)
-                    <img src="{{ asset('storage/' . $user->profile_photo) }}" 
-                         alt="Profile Photo" 
-                         class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-white shadow-xl transform group-hover:scale-105 transition-transform duration-300">
-                @else
-                    <div class="relative w-28 h-28 sm:w-32 sm:h-32 bg-white rounded-full flex items-center justify-center text-5xl sm:text-6xl border-4 border-white shadow-xl transform group-hover:scale-105 transition-transform duration-300">
-                        {{ $user->role == 'santri_putra' ? '👦' : '👧' }}
-                    </div>
+                    <form action="{{ route('santri.profile.photo.delete') }}" 
+                          method="POST" 
+                          class="mt-4"
+                          onsubmit="return confirm('Hapus foto profil?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" 
+                                class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl">
+                            🗑️ Hapus Foto
+                        </button>
+                    </form>
                 @endif
-                
-                <!-- Upload Button Overlay - Enhanced -->
-                <div class="absolute inset-0 bg-gradient-to-br from-emerald-600 to-teal-600 bg-opacity-90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm"
-                     x-data="{ showModal: false }">
-                    <button @click="showModal = true" class="text-white text-sm font-bold px-3 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transform hover:scale-110 transition-all duration-200 shadow-lg">
-                        📸 Ubah
-                    </button>
-                    
-                    <!-- Modal Upload Photo - Enhanced -->
-                    <div x-show="showModal" 
-                         @click.away="showModal = false"
-                         x-transition:enter="transition ease-out duration-300"
-                         x-transition:enter-start="opacity-0 scale-90"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-200"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-90"
-                         class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
-                         style="display: none;">
-                        <div class="bg-white rounded-2xl p-6 max-w-md w-full transform shadow-2xl" @click.stop>
-                            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                <span class="text-2xl">📸</span> Upload Foto Profil
-                            </h3>
-                            
-                            <form action="{{ route('santri.profile.photo.update') }}" 
-                                  method="POST" 
-                                  enctype="multipart/form-data"
-                                  class="space-y-4">
-                                @csrf
-                                
-                                <div class="relative">
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                        Pilih Foto
-                                    </label>
-                                    <input type="file" 
-                                           name="profile_photo" 
-                                           accept="image/*"
-                                           required
-                                           class="block w-full text-sm text-gray-600
-                                                  file:mr-4 file:py-2.5 file:px-4
-                                                  file:rounded-lg file:border-0
-                                                  file:text-sm file:font-semibold
-                                                  file:bg-gradient-to-r file:from-emerald-50 file:to-teal-50 file:text-emerald-700
-                                                  hover:file:from-emerald-100 hover:file:to-teal-100 cursor-pointer
-                                                  transition-all duration-200">
-                                    <p class="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                                        <span>ℹ️</span> Format: JPG, PNG, GIF • Maksimal: 2MB
-                                    </p>
-                                </div>
-                                
-                                <div class="flex gap-3">
-                                    <button type="submit" 
-                                            class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-3 px-4 rounded-xl transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl">
-                                        ✨ Upload
-                                    </button>
-                                    <button type="button" 
-                                            @click="showModal = false"
-                                            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-4 rounded-xl transition-all duration-200 active:scale-95">
-                                        Batal
-                                    </button>
-                                </div>
-                            </form>
-                            
-                            @if($user->profile_photo)
-                                <form action="{{ route('santri.profile.photo.delete') }}" 
-                                      method="POST" 
-                                      class="mt-4"
-                                      onsubmit="return confirm('Hapus foto profil?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" 
-                                            class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-4 rounded-xl transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl">
-                                        🗑️ Hapus Foto
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
-                    </div>
-                </div>
             </div>
+        </div>
+    </div>
+</div>
             
             <!-- User Info - Enhanced -->
             <div class="flex-1 text-center md:text-left">

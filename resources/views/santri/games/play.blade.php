@@ -125,7 +125,7 @@
             </div>
 
             <div class="mt-8 flex gap-4">
-                <a href="{{ route('santri.games') }}" 
+                <a href="{{ route('santri.games.index') }}"
                    class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 text-center py-4 rounded-xl font-bold text-lg transition-colors">
                     ← Batal
                 </a>

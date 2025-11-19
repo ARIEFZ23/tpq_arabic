@@ -221,7 +221,4 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
 */
 Route::middleware(['auth:sanctum'])->prefix('api/v1')->name('api.v1.')->group(function () {
     
-    // Hapus listening game routes dari sini karena sudah dipindah ke web routes
-    // Tetap pertahankan API routes untuk fitur lain jika diperlukan
-    
 });
