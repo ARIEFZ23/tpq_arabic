@@ -300,24 +300,24 @@
 
                     <!-- Kelas -->
                     <div>
-                        <label for="kelas" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <label for="class_id" class="block text-sm font-semibold text-gray-700 mb-2">
                             📚 Kelas <span class="text-red-500">*</span>
                         </label>
                         <select 
-                            id="kelas" 
-                            name="kelas" 
+                            id="class_id" 
+                            name="class_id" 
                             required
-                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all @error('kelas') border-red-500 @enderror"
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all @error('class_id') border-red-500 @enderror"
                         >
                             <option value="">-- Pilih Kelas --</option>
-                            <option value="Kelas 1" {{ old('kelas') == 'Kelas 1' ? 'selected' : '' }}>Kelas 1</option>
-                            <option value="Kelas 2" {{ old('kelas') == 'Kelas 2' ? 'selected' : '' }}>Kelas 2</option>
-                            <option value="Kelas 3" {{ old('kelas') == 'Kelas 3' ? 'selected' : '' }}>Kelas 3</option>
-                            <option value="Kelas 4" {{ old('kelas') == 'Kelas 4' ? 'selected' : '' }}>Kelas 4</option>
-                            <option value="Kelas 5" {{ old('kelas') == 'Kelas 5' ? 'selected' : '' }}>Kelas 5</option>
-                            <option value="Kelas 6" {{ old('kelas') == 'Kelas 6' ? 'selected' : '' }}>Kelas 6</option>
+                            <option value="Kelas 1" {{ old('class_id') == 'Kelas 1' ? 'selected' : '' }}>Kelas 1</option>
+                            <option value="Kelas 2" {{ old('class_id') == 'Kelas 2' ? 'selected' : '' }}>Kelas 2</option>
+                            <option value="Kelas 3" {{ old('class_id') == 'Kelas 3' ? 'selected' : '' }}>Kelas 3</option>
+                            <option value="Kelas 4" {{ old('class_id') == 'Kelas 4' ? 'selected' : '' }}>Kelas 4</option>
+                            <option value="Kelas 5" {{ old('class_id') == 'Kelas 5' ? 'selected' : '' }}>Kelas 5</option>
+                            <option value="Kelas 6" {{ old('class_id') == 'Kelas 6' ? 'selected' : '' }}>Kelas 6</option>
                         </select>
-                        @error('kelas')
+                        @error('class_id')
                             <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
                                 <span>⚠️</span> {{ $message }}
                             </p>

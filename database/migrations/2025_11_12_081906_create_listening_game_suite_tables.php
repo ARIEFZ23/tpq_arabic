@@ -44,10 +44,11 @@ return new class extends Migration
             // Indexes untuk performa
             $table->index('level');
             $table->index('speaker');
+            
+            // Set charset & collation (cara Laravel)
+            $table->charset = 'utf8mb4';
+            $table->collation = 'utf8mb4_unicode_ci';
         });
-
-        // Set charset untuk support Arabic text
-        DB::statement('ALTER TABLE listening_questions CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
 
         /**
          * 2️⃣ Membuat tabel `leaderboard`
@@ -107,10 +108,11 @@ return new class extends Migration
             $table->index(['user_id', 'created_at']);
             $table->index('level_type');
             $table->index('is_correct');
+            
+            // Set charset & collation (cara Laravel)
+            $table->charset = 'utf8mb4';
+            $table->collation = 'utf8mb4_unicode_ci';
         });
-
-        // Set charset untuk support Arabic answers
-        DB::statement('ALTER TABLE game_sessions CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
 
         /**
          * 4️⃣ Update tabel `users` - Tambah kolom statistik
@@ -156,13 +158,13 @@ return new class extends Migration
 
         // Add indexes untuk leaderboard sorting (only if not exists)
         try {
-            DB::statement('CREATE INDEX users_total_exp_index ON users(total_exp)');
+            DB::statement('CREATE INDEX IF NOT EXISTS users_total_exp_index ON users(total_exp)');
         } catch (\Exception $e) {
             // Index already exists
         }
         
         try {
-            DB::statement('CREATE INDEX users_total_points_index ON users(total_points)');
+            DB::statement('CREATE INDEX IF NOT EXISTS users_total_points_index ON users(total_points)');
         } catch (\Exception $e) {
             // Index already exists
         }

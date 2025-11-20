@@ -26,6 +26,7 @@ class User extends Authenticatable
         'password',
         'role',
         'class_id',
+        'no_telepon',
         'level',
         'experience_points',
         'total_score',

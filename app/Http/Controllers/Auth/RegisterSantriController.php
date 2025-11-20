@@ -15,7 +15,7 @@ use Illuminate\View\View;
 class RegisterSantriController extends Controller
 {
     /**
-     * Display the registration form for santri.
+     * Menampilkan form pendaftaran santri.
      */
     public function create(): View
     {
@@ -23,57 +23,59 @@ class RegisterSantriController extends Controller
     }
 
     /**
-     * Handle an incoming registration request for santri.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * Menangani proses penyimpanan data santri baru.
      */
     public function store(Request $request): RedirectResponse
     {
-        // Validasi input
+        // 1. VALIDASI INPUT
+        // Kita sesuaikan dengan name="..." yang ada di HTML
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'jenis_kelamin' => ['required', 'in:putra,putri'],
-            'kelas' => ['required', 'string', 'max:50'],
+            
+            // HTML mengirim 'role' (santri_putra/santri_putri), bukan 'jenis_kelamin'
+            'role' => ['required', 'string', 'in:santri_putra,santri_putri'],
+            
+            // HTML mengirim 'class_id', bukan 'kelas'
+            'class_id' => ['required', 'string', 'max:50'],
+            
             'no_telepon' => ['nullable', 'string', 'max:20'],
         ], [
+            // Pesan Error Bahasa Indonesia
             'name.required' => 'Nama lengkap wajib diisi',
-            'email.required' => 'Email wajib diisi',
-            'email.email' => 'Format email tidak valid',
-            'email.unique' => 'Email sudah terdaftar',
-            'password.required' => 'Password wajib diisi',
+            'email.unique' => 'Email ini sudah terdaftar, silakan login',
             'password.confirmed' => 'Konfirmasi password tidak cocok',
-            'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih',
-            'jenis_kelamin.in' => 'Jenis kelamin tidak valid',
-            'kelas.required' => 'Kelas wajib dipilih',
+            'role.required' => 'Jenis kelamin (Putra/Putri) wajib dipilih',
+            'class_id.required' => 'Kelas wajib dipilih',
         ]);
 
-        // Tentukan role berdasarkan jenis kelamin
-        $role = $request->jenis_kelamin === 'putra' ? 'santri_putra' : 'santri_putri';
-
-        // Buat user baru dengan default level system values
+        // 2. SIMPAN KE DATABASE
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $role,
-            'class_id' => $request->kelas,
+            'role' => $request->role,          // Langsung ambil dari request
+            'class_id' => $request->class_id,  // Masuk ke kolom class_id
             'no_telepon' => $request->no_telepon,
-            // Default level system values
+            
+            // 3. NILAI DEFAULT (PENTING!)
+            // Disesuaikan dengan screenshot Database phpMyAdmin
             'level' => 1,
             'experience_points' => 0,
             'total_score' => 0,
-            'games_completed' => 0,
+            'total_games_completed' => 0, // PERBAIKAN: Sesuai nama kolom di DB
+            'current_streak' => 0,
+            'longest_streak' => 0,
         ]);
 
-        // Fire registered event
+        // 4. PROSES LOGIN OTOMATIS
         event(new Registered($user));
-
-        // Login user otomatis setelah registrasi
         Auth::login($user);
 
-        // Redirect ke santri dashboard
-        return redirect()->route('santri.dashboard')->with('success', 'Pendaftaran berhasil! Selamat datang di TPQ Arabic Learning! 🎉');
+        // 5. REDIRECT KE DASHBOARD
+        // Menggunakan 'route' yang aman. Jika route 'santri.dashboard' tidak ada, 
+        // bisa ganti ke 'dashboard' saja.
+        return redirect(route('dashboard', absolute: false));
     }
 }
