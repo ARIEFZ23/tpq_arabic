@@ -29,11 +29,18 @@
                     @forelse($questions as $question)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $question->id }}</td>
+                            
+                            {{-- PERBAIKAN UTAMA DI SINI --}}
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <a href="{{ route('admin.games.show', $question->game) }}" class="text-blue-600 hover:text-blue-900">
-                                    {{ $question->game->title }}
-                                </a>
+                                @if($question->game)
+                                    <a href="{{ route('admin.games.show', $question->game) }}" class="text-blue-600 hover:text-blue-900">
+                                        {{ $question->game->title }}
+                                    </a>
+                                @else
+                                    <span class="text-red-500 italic">(Game Terhapus)</span>
+                                @endif
                             </td>
+
                             <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{{ $question->question_text }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">{{ $question->correct_answer }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $question->location_name ?? '-' }}</td>
@@ -56,7 +63,6 @@
             </table>
         </div>
 
-        <!-- Pagination -->
         <div class="mt-4">
             {{ $questions->links() }}
         </div>
