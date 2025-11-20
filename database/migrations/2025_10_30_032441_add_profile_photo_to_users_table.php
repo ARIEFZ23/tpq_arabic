@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('profile_photo')->nullable()->after('current_badge');
-            $table->integer('total_score')->default(0)->after('total_games_completed');
+            // HANYA buat profile_photo. 
+            // Jangan ada total_score di sini!
+            if (!Schema::hasColumn('users', 'profile_photo')) {
+                $after = Schema::hasColumn('users', 'current_badge') ? 'current_badge' : 'email';
+                $table->string('profile_photo')->nullable()->after($after);
+            }
         });
     }
 
@@ -23,7 +27,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['profile_photo', 'total_score']);
+            // Hapus profile_photo saja
+            if (Schema::hasColumn('users', 'profile_photo')) {
+                $table->dropColumn('profile_photo');
+            }
         });
     }
 };

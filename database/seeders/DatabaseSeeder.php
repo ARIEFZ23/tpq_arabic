@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             SentenceBuilderGameSeeder::class,
             SentenceBuilderQuestionsSeeder::class,
             ListeningAudioSeeder::class,
+            UserSeeder::class
         ]);
     }
 }

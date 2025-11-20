@@ -60,6 +60,13 @@ Route::middleware('auth')->prefix('profile')->name('profile.')->group(function (
     Route::get('/', [ProfileController::class, 'edit'])->name('edit');
     Route::patch('/', [ProfileController::class, 'update'])->name('update');
     Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
+    
+    // Photo Management Routes
+    Route::post('/photo', [ProfileController::class, 'updatePhoto'])->name('photo.update');
+    Route::delete('/photo', [ProfileController::class, 'deletePhoto'])->name('photo.delete');
+    
+    // Password Update Route
+    Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
 });
 
 /*
@@ -141,36 +148,6 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
     Route::get('/scores', [SantriController::class, 'scores'])->name('scores');
     Route::get('/leaderboard', [SantriController::class, 'leaderboard'])->name('leaderboard');
     Route::get('/profile', [SantriController::class, 'profile'])->name('profile');
-    
-    // Profile Photo Management
-    Route::post('/profile/photo', function(\Illuminate\Http\Request $request) {
-        $request->validate([
-            'profile_photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
-        
-        $user = Auth::user();
-        
-        if ($user->profile_photo && \Storage::disk('public')->exists($user->profile_photo)) {
-            \Storage::disk('public')->delete($user->profile_photo);
-        }
-        
-        $path = $request->file('profile_photo')->store('profile-photos', 'public');
-        $user->update(['profile_photo' => $path]);
-        
-        return back()->with('success', 'Foto profil berhasil diupdate!');
-    })->name('profile.photo.update');
-    
-    Route::delete('/profile/photo', function() {
-        $user = Auth::user();
-        
-        if ($user->profile_photo && \Storage::disk('public')->exists($user->profile_photo)) {
-            \Storage::disk('public')->delete($user->profile_photo);
-        }
-        
-        $user->update(['profile_photo' => null]);
-        
-        return back()->with('success', 'Foto profil berhasil dihapus!');
-    })->name('profile.photo.delete');
     
     // General Games
     Route::prefix('games')->name('games.')->group(function () {
