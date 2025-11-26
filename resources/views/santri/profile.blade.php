@@ -90,7 +90,7 @@
                                     <p class="text-gray-600 text-xs sm:text-sm mt-1 sm:mt-2">Tampilkan identitasmu yang terbaik! ✨</p>
                                 </div>
                                 
-                                <form action="{{ route('santri.profile.photo.update') }}" 
+                                <form action="{{ route('profile.photo.update') }}"
                                       method="POST" 
                                       enctype="multipart/form-data"
                                       class="space-y-4 sm:space-y-5">
@@ -139,7 +139,7 @@
                                 
                                 @if($user->profile_photo)
                                     <div class="mt-4 sm:mt-5 pt-4 sm:pt-5 border-t-2 border-gray-200">
-                                        <form action="{{ route('santri.profile.photo.delete') }}" 
+                                        <form action="{{ route('profile.photo.update') }}" 
                                               method="POST" 
                                               onsubmit="return confirm('⚠️ Yakin ingin menghapus foto profil?')">
                                             @csrf

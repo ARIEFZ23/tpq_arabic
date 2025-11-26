@@ -34,6 +34,7 @@
                 <div class="text-6xl mb-4">🧩</div>
                 <h2 class="text-2xl font-bold mb-4">Siap Membangun Kalimat?</h2>
                 <p class="text-gray-600 mb-2">• Pilih kata untuk menyusun kalimat dari kanan ke kiri.</p>
+                <p class="text-gray-600 mb-2">• Klik kata di area jawaban untuk mengembalikannya.</p>
                 <p class="text-gray-600 mb-2">• Gunakan "Hint" jika kesulitan (-10 poin).</p>
                 <p class="text-gray-600 mb-2">• Jawaban benar: +20 poin, salah: -5 poin & -1 nyawa.</p>
             </div>
@@ -70,6 +71,12 @@
             <div class="flex justify-center gap-4">
                 <button 
                     type="button"
+                    id="reset-btn"
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold transition-all">
+                    🔄 Reset Jawaban
+                </button>
+                <button 
+                    type="button"
                     id="hint-btn"
                     class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-bold transition-all">
                     💡 Hint (-10 Poin)
@@ -86,11 +93,6 @@
             <div id="feedback-message" class="mt-6 p-4 rounded-lg text-center font-bold hidden"></div>
         </div>
     </div>
-</div>
-
-<!-- Game Over Modal (bisa kita tambahkan nanti) -->
-<div id="game-over-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <!-- ... -->
 </div>
 
 <script>
@@ -117,6 +119,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const scrambledWordsContainer = document.getElementById('scrambled-words');
     const hintBtn = document.getElementById('hint-btn');
     const checkBtn = document.getElementById('check-btn');
+    const resetBtn = document.getElementById('reset-btn');
     const feedbackMessage = document.getElementById('feedback-message');
 
     // Shuffle questions at start
@@ -126,6 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
     startBtn.addEventListener('click', startGame);
     hintBtn.addEventListener('click', showHint);
     checkBtn.addEventListener('click', checkAnswer);
+    resetBtn.addEventListener('click', resetCurrentQuestion);
 
     // --- Game Functions ---
     function startGame() {
@@ -138,6 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
         lives = 3;
         gameOver = false;
         currentSentence = [];
+        correctAnswersCount = 0;
         
         updateDisplay();
         loadQuestion();
@@ -167,27 +172,72 @@ document.addEventListener('DOMContentLoaded', function () {
         shuffleArray(scrambledWords);
 
         scrambledWords.forEach(word => {
-            const wordBtn = document.createElement('button');
-            wordBtn.type = 'button';
-            wordBtn.className = 'bg-blue-100 hover:bg-blue-200 border-2 border-blue-300 rounded-lg px-4 py-2 font-bold text-blue-800 transition-all transform hover:scale-105 cursor-pointer';
-            wordBtn.textContent = word;
-            wordBtn.style.direction = 'rtl'; // Tampilkan teks Arab dari kanan ke kiri
-            wordBtn.dataset.word = word; // Simpan kata di atribut data
-            wordBtn.addEventListener('click', () => addWordToSentence(word, wordBtn));
+            const wordBtn = createWordButton(word, 'scrambled');
             scrambledWordsContainer.appendChild(wordBtn);
         });
 
         hideFeedback();
     }
 
-    function addWordToSentence(word, buttonElement) {
+    function createWordButton(word, type) {
+        const wordBtn = document.createElement('button');
+        wordBtn.type = 'button';
+        
+        if (type === 'scrambled') {
+            wordBtn.className = 'bg-blue-100 hover:bg-blue-200 border-2 border-blue-300 rounded-lg px-4 py-2 font-bold text-blue-800 transition-all transform hover:scale-105 cursor-pointer';
+            wordBtn.addEventListener('click', () => addWordToSentence(word));
+        } else if (type === 'selected') {
+            wordBtn.className = 'inline-block bg-yellow-100 hover:bg-yellow-200 border-2 border-yellow-300 rounded-lg px-4 py-2 font-bold text-yellow-800 mx-1 cursor-pointer transition-all transform hover:scale-105';
+            wordBtn.addEventListener('click', () => removeWordFromSentence(word));
+        }
+        
+        wordBtn.textContent = word;
+        wordBtn.style.direction = 'rtl'; // Tampilkan teks Arab dari kanan ke kiri
+        wordBtn.dataset.word = word; // Simpan kata di atribut data
+        
+        return wordBtn;
+    }
+
+    function addWordToSentence(word) {
         if (gameOver) return;
         
+        // Tambahkan kata ke kalimat
         currentSentence.push(word);
-        buttonElement.disabled = true; // Nonaktifkan tombol setelah dipilih
-        buttonElement.classList.add('opacity-50', 'cursor-not-allowed');
+        
+        // Cari dan nonaktifkan tombol kata di area scrambled
+        const buttons = scrambledWordsContainer.querySelectorAll('button');
+        buttons.forEach(btn => {
+            if (btn.dataset.word === word && !btn.disabled) {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                return; // Stop setelah menemukan tombol pertama yang cocok
+            }
+        });
         
         updateSentenceDisplay();
+    }
+
+    function removeWordFromSentence(word) {
+        if (gameOver) return;
+        
+        // Cari index kata yang diklik
+        const wordIndex = currentSentence.indexOf(word);
+        if (wordIndex > -1) {
+            // Hapus kata dari array
+            currentSentence.splice(wordIndex, 1);
+            
+            // Aktifkan kembali tombol kata di area scrambled
+            const buttons = scrambledWordsContainer.querySelectorAll('button');
+            buttons.forEach(btn => {
+                if (btn.dataset.word === word && btn.disabled) {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    return; // Stop setelah menemukan tombol pertama yang cocok
+                }
+            });
+            
+            updateSentenceDisplay();
+        }
     }
 
     function updateSentenceDisplay() {
@@ -196,12 +246,32 @@ document.addEventListener('DOMContentLoaded', function () {
             sentenceBuilder.style.direction = 'ltr';
         } else {
             // Tampilkan kalimat dari kanan ke kiri (RTL untuk bahasa Arab)
-            sentenceBuilder.innerHTML = currentSentence.map(word => 
-                `<span class="inline-block bg-yellow-100 border-2 border-yellow-300 rounded-lg px-4 py-2 font-bold text-yellow-800 mx-1" dir="rtl">${word}</span>`
-            ).join('');
-            // Set direction RTL untuk container
+            sentenceBuilder.innerHTML = '';
             sentenceBuilder.style.direction = 'rtl';
+            
+            // Buat tombol untuk setiap kata yang bisa diklik untuk dihapus
+            currentSentence.forEach(word => {
+                const wordBtn = createWordButton(word, 'selected');
+                sentenceBuilder.appendChild(wordBtn);
+            });
         }
+    }
+
+    function resetCurrentQuestion() {
+        if (gameOver) return;
+        
+        // Reset kalimat
+        currentSentence = [];
+        updateSentenceDisplay();
+        
+        // Aktifkan kembali semua tombol kata
+        const buttons = scrambledWordsContainer.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        });
+        
+        hideFeedback();
     }
     
     function showHint() {
@@ -221,8 +291,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const correctSentence = currentQuestion.correct;
 
         if (userSentence === correctSentence) {
-            // Jawaban Benar - TAMBAH SKOR
+            // Jawaban Benar - TAMBAH SKOR DAN COUNTER
             score += 20; // Tambah 20 poin untuk jawaban benar
+            correctAnswersCount++; // Tracking jawaban benar
             updateDisplay(); // Update tampilan skor
             showFeedback('✅ Benar! +20 Poin', 'success');
             
@@ -245,16 +316,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }, 2000);
             } else {
                 // Biarkan user mencoba lagi di soal yang sama
-                // Reset kalimat dan aktifkan kembali tombol kata
                 setTimeout(() => {
-                    currentSentence = [];
-                    updateSentenceDisplay();
-                    const buttons = scrambledWordsContainer.querySelectorAll('button');
-                    buttons.forEach(btn => {
-                        btn.disabled = false;
-                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    });
-                    hideFeedback();
+                    resetCurrentQuestion();
                 }, 2000);
             }
         }
@@ -263,10 +326,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function endGame(isCompleted) {
         gameOver = true;
         
-        const totalQuestionsAnswered = isCompleted ? allQuestions.length : currentQuestionIndex;
-        const correctAnswers = Math.floor(score / 20); // Karena 20 poin per jawaban benar
+        const totalQuestionsAnswered = currentQuestionIndex; // Jumlah soal yang dijawab
         
-        // KIRIM SKOR KE BACKEND (MENGGUNAKAN LOGIKA YANG SAMA DENGAN GAME LAIN)
+        // KIRIM SKOR KE BACKEND
         fetch('/santri/sentence-builder/submit', { 
             method: 'POST',
             headers: {
@@ -274,25 +336,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({
-                answers: {}, // Tidak ada jawaban per soal, kita kirim data agregat
                 score: score,
-                correct_answers: correctAnswers,
+                correct_answers: correctAnswersCount, // Gunakan counter yang akurat
                 total_questions: totalQuestionsAnswered
             })
         })
         .then(response => response.json())
         .then(data => {
-            // Arahkan ke halaman hasil atau tampilkan modal
-            console.log('Score submitted:', data);
-            // Bisa diarahkan ke halaman result umum atau modal khusus
-            window.location.href = `/santri/sentence-builder/result`;
+            if (data.success) {
+                // Arahkan ke halaman hasil
+                window.location.href = '/santri/sentence-builder/result';
+            } else {
+                alert('Terjadi kesalahan: ' + data.message);
+            }
         })
         .catch(error => {
             console.error('Error submitting score:', error);
             alert('Terjadi kesalahan saat menyimpan skor.');
         });
     }
-
 
     // --- Helper Functions ---
     function updateDisplay() {

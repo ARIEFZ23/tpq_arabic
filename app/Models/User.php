@@ -33,8 +33,6 @@ class User extends Authenticatable
         'total_games_completed',
         'current_badge',
         'profile_photo',
-        'total_points', // Kolom baru untuk game listening
-        'total_exp',    // Kolom baru untuk game listening
     ];
 
     /**

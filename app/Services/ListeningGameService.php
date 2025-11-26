@@ -740,8 +740,9 @@ public function resumeGame(): array
             ->where('questionable_type', \App\Models\ListeningQuestion::class)
             ->sum('exp_earned');
 
-        $levelInfo = \App\Helpers\LevelSystem::getLevelInfo($updatedUser->total_exp ?? 0);
-        $oldLevelInfo = \App\Helpers\LevelSystem::getLevelInfo(($updatedUser->total_exp ?? 0) - $totalExpGained);
+// Gunakan kolom 'experience_points' yang valid
+        $levelInfo = \App\Helpers\LevelSystem::getLevelInfo($updatedUser->experience_points ?? 0);
+        $oldLevelInfo = \App\Helpers\LevelSystem::getLevelInfo(($updatedUser->experience_points ?? 0) - $totalExpGained);
         $levelUp = $levelInfo['level'] > $oldLevelInfo['level'];
 
         $summary = [
@@ -783,8 +784,9 @@ public function resumeGame(): array
             ->selectRaw('SUM(exp_earned) as total_exp, COUNT(id) as total_questions')
             ->first();
 
-        $user->total_points = ($user->total_points ?? 0) + $session['score'];
-        $user->total_exp = ($user->total_exp ?? 0) + ($sessionStats->total_exp ?? 0);
+// Menggunakan kolom 'total_score' dan 'experience_points' yang sudah ada
+        $user->total_score = ($user->total_score ?? 0) + $session['score'];
+        $user->experience_points = ($user->experience_points ?? 0) + ($sessionStats->total_exp ?? 0);
         
         // ================================================================
         // PERBAIKAN BUG STATISTIK (Temuan Anda)
@@ -808,15 +810,15 @@ public function resumeGame(): array
     private function updateLeaderboard(User $user): void
     {
         $freshUser = $user->fresh();
-
-        DB::table('leaderboard')->updateOrInsert(
-            ['user_id' => $user->id],
-            [
-                'total_points' => $freshUser->total_points, 
-                'total_exp' => $freshUser->total_exp,
-                'last_updated' => now(),
-            ]
-        );
+            DB::table('leaderboard')->updateOrInsert(
+                ['user_id' => $user->id],
+                [
+                    // Kolom di DB leaderboard tetap 'total_points', tapi isinya ambil dari 'total_score' user
+                    'total_points' => $freshUser->total_score,
+                    'total_exp' => $freshUser->experience_points,
+                    'last_updated' => now(),
+                ]
+            );
     }
 
     private function calculateAccuracy(array $session): float
