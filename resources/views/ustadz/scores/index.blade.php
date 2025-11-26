@@ -1,6 +1,4 @@
-@extends('layouts.ustadz')
-
-@section('content')
+<x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between gap-2">
             <h2 class="font-semibold text-lg sm:text-xl text-gray-800 leading-tight flex items-center gap-2 animate-fade-in">
@@ -308,4 +306,4 @@
             animation: bounceSlow 3s ease-in-out infinite;
         }
     </style>
-@endsection
+</x-app-layout>

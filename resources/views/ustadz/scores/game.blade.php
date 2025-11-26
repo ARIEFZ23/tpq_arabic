@@ -1,6 +1,4 @@
-@extends('layouts.ustadz')
-
-@section('content')
+<x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
@@ -225,5 +223,4 @@
 
         </div>
     </div>
-
-@endsection
+</x-app-layout>

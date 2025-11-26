@@ -1,6 +1,9 @@
-@extends('layouts.ustadz')
-
-@section('content')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Dashboard Ustadz
+        </h2>
+    </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -21,13 +24,13 @@
                                 <span>السلام عليكم</span>
                                 <span class="text-3xl sm:text-4xl animate-wave inline-block">👋</span>
                             </h1>
-                            <p class="text-xl sm:text-2xl font-semibold mb-1 animate-slide-up"> {{ Auth::user()->name }}</p>
+                            <p class="text-xl sm:text-2xl font-semibold mb-1 animate-slide-up">Ustadz {{ Auth::user()->name }}</p>
                             <p class="text-base sm:text-lg opacity-90 animate-slide-up" style="animation-delay: 0.1s;">Kelola game dan pertanyaan pembelajaran di sini</p>
                         </div>
                         <div class="hidden sm:flex flex-col items-center gap-2">
                             <div class="text-6xl animate-bounce-slow">🕌</div>
                             <div class="text-xs font-semibold bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
-                                Halaman guru
+                                Admin Panel
                             </div>
                         </div>
                     </div>
@@ -290,4 +293,4 @@
             animation: bounceSlow 3s ease-in-out infinite;
         }
     </style>
-@endsection
+</x-app-layout>
