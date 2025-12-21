@@ -158,7 +158,7 @@
                     </h1>
                     
                     <p class="text-lg sm:text-xl text-gray-600 leading-relaxed">
-                        Platform pembelajaran bahasa Arab interaktif dengan sistem level, badge, dan games yang menyenangkan. Cocok untuk santri TPQ semua usia! 
+                        Platform pembelajaran bahasa Arab interaktif dengan sistem level, badge, dan games yang pasti menyenangkan. Ayokk bergabung !! 
                         <span class="inline-block text-2xl animate-bounce-smooth">🕌✨</span>
                     </p>
                     
@@ -338,12 +338,12 @@
                 <div class="relative z-10">
                     <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Siap Mulai Belajar?</h2>
                     <p class="text-lg sm:text-xl text-white/90 mb-8">
-                        Bergabunglah dengan ribuan santri lainnya yang sudah belajar bahasa Arab dengan cara yang menyenangkan!
+                        Bergabunglah dengan santri lainnya yang sudah belajar bahasa Arab dengan cara yang menyenangkan!
                     </p>
                     @guest
                         @if (Route::has('register.santri'))
                         <a href="{{ route('register.santri') }}" class="inline-block px-10 sm:px-12 py-4 sm:py-5 bg-white text-emerald-600 rounded-2xl font-bold text-base sm:text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all active:scale-95">
-                            🚀 Daftar Gratis Sekarang!
+                            🚀 Ayok Daftar Sekarang!
                         </a>
                         @endif
                     @else

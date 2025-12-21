@@ -10,137 +10,429 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Alpine.js (Versi Terbaru & Defer) -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <!-- Custom CSS -->
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #858796;
+            --success-color: #1cc88a;
+            --info-color: #36b9cc;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --sidebar-width: 260px;
+            --navbar-height: 70px;
         }
-        [x-cloak] { 
-            display: none !important; 
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fc;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, #4e73df 0%, #224abe 100%);
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-brand h4 {
+            color: white;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .sidebar-brand .brand-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .sidebar-menu {
+            padding: 1.5rem 0;
+        }
+
+        .sidebar-menu-item {
+            margin: 0.25rem 1rem;
+        }
+
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .sidebar-menu-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar-menu-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-menu-link i {
+            width: 24px;
+            font-size: 1.1rem;
+            margin-right: 0.75rem;
+        }
+
+        /* Topbar */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            height: var(--navbar-height);
+            background: white;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .topbar-toggle {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-right: 1rem;
+        }
+
+        .topbar-search {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .topbar-search input {
+            border: 1px solid #e3e6f0;
+            border-radius: 50px;
+            padding: 0.5rem 1.25rem;
+            font-size: 0.875rem;
+        }
+
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: auto;
+        }
+
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .user-dropdown-toggle:hover {
+            background: #f8f9fc;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .user-info {
+            text-align: left;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #5a5c69;
+            font-size: 0.875rem;
+            display: block;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: #858796;
+        }
+
+        .dropdown-menu {
+            min-width: 200px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--navbar-height);
+            padding: 2rem;
+            min-height: calc(100vh - var(--navbar-height));
+            transition: all 0.3s ease;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .topbar {
+                left: 0;
+            }
+
+            .topbar-toggle {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .topbar-search {
+                display: none;
+            }
+        }
+
+        /* Sidebar Overlay for Mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Animations */
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideInLeft 0.3s ease;
         }
     </style>
 </head>
-<body class="bg-gray-100 font-sans antialiased">
-    
-    <div class="min-h-screen bg-gray-100" x-data="{ sidebarOpen: false }">
-        
-        <!-- Navigation Bar -->
-        <nav class="bg-white border-b border-gray-200 fixed z-30 w-full">
-            <div class="px-3 py-3 lg:px-5 lg:pl-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center justify-start">
-                        <!-- Mobile Menu Button -->
-                        <button @click="sidebarOpen = !sidebarOpen" type="button" class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
-                            <span class="sr-only">Open sidebar</span>
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
-                            </svg>
-                        </button>
-                        <a href="{{ route('admin.dashboard') }}" class="flex ml-2 md:mr-24">
-                            <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap text-gray-800">TPQ Admin</span>
-                        </a>
-                    </div>
-                    
-                    <!-- Right Side (Profile) -->
-                    <div class="flex items-center">
-                        <div class="flex items-center ml-3">
-                            <div class="relative" x-data="{ open: false }">
-                                <button @click="open = !open" type="button" class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300" aria-expanded="false">
-                                    <span class="sr-only">Open user menu</span>
-                                    <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold">
-                                        {{ substr(Auth::user()->name, 0, 1) }}
-                                    </div>
-                                </button>
-                                
-                                <!-- Dropdown menu -->
-                                <div x-show="open" @click.away="open = false" 
-                                     x-transition:enter="transition ease-out duration-100"
-                                     x-transition:enter-start="transform opacity-0 scale-95"
-                                     x-transition:enter-end="transform opacity-100 scale-100"
-                                     x-transition:leave="transition ease-in duration-75"
-                                     x-transition:leave-start="transform opacity-100 scale-100"
-                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                     class="z-50 absolute right-0 mt-2 w-48 text-base list-none bg-white divide-y divide-gray-100 rounded shadow" 
-                                     style="display: none;">
-                                    <div class="px-4 py-3" role="none">
-                                        <p class="text-sm text-gray-900" role="none">{{ Auth::user()->name }}</p>
-                                        <p class="text-sm font-medium text-gray-900 truncate" role="none">{{ Auth::user()->email }}</p>
-                                    </div>
-                                    <ul class="py-1" role="none">
-                                        <li>
-                                            <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Dashboard Utama</a>
-                                        </li>
-                                        <li>
-                                            <form method="POST" action="{{ route('logout') }}">
-                                                @csrf
-                                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-gray-100" role="menuitem">Sign out</button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<body>
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <h4>
+                <span class="brand-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </span>
+                TPQ Admin
+            </h4>
+        </div>
+
+        <nav class="sidebar-menu">
+            <div class="sidebar-menu-item">
+                <a href="{{ route('admin.dashboard') }}" class="sidebar-menu-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{{ route('admin.users.index') }}" class="sidebar-menu-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{{ route('admin.games.index') }}" class="sidebar-menu-link {{ request()->routeIs('admin.games.*') ? 'active' : '' }}">
+                    <i class="fas fa-gamepad"></i>
+                    <span>Games</span>
+                </a>
+            </div>
+
+            <div class="sidebar-menu-item">
+                <a href="{{ route('admin.questions.index') }}" class="sidebar-menu-link {{ request()->routeIs('admin.questions.*') ? 'active' : '' }}">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Questions</span>
+                </a>
             </div>
         </nav>
+    </aside>
 
-        <!-- Sidebar -->
-        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed top-0 left-0 z-20 w-64 h-screen pt-20 transition-transform bg-white border-r border-gray-200 md:translate-x-0" aria-label="Sidebar">
-            <div class="h-full px-3 pb-4 overflow-y-auto bg-white">
-                <ul class="space-y-2 font-medium">
+    <!-- Topbar -->
+    <nav class="topbar">
+        <button class="topbar-toggle" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <div class="topbar-search">
+            <input type="text" class="form-control" placeholder="Cari sesuatu...">
+        </div>
+
+        <div class="topbar-user">
+            <div class="dropdown user-dropdown">
+                <button class="user-dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <div class="user-avatar">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    </div>
+                    <div class="user-info d-none d-md-block">
+                        <span class="user-name">{{ Auth::user()->name }}</span>
+                        <span class="user-role">{{ ucfirst(Auth::user()->role) }}</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-muted"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow">
                     <li>
-                        <a href="{{ route('admin.dashboard') }}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {{ request()->routeIs('admin.dashboard') ? 'bg-gray-100' : '' }}">
-                            <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path></svg>
-                            <span class="ml-3">Dashboard</span>
+                        <a class="dropdown-item" href="{{ route('dashboard') }}">
+                            <i class="fas fa-home me-2"></i>Dashboard Utama
                         </a>
                     </li>
+                    <li><hr class="dropdown-divider"></li>
                     <li>
-                        <a href="{{ route('admin.users.index') }}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {{ request()->routeIs('admin.users.*') ? 'bg-gray-100' : '' }}">
-                            <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path></svg>
-                            <span class="ml-3">Users</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('admin.games.index') }}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {{ request()->routeIs('admin.games.*') ? 'bg-gray-100' : '' }}">
-                            <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="currentColor" viewBox="0 0 20 20"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path></svg>
-                            <span class="ml-3">Games</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('admin.questions.index') }}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {{ request()->routeIs('admin.questions.*') ? 'bg-gray-100' : '' }}">
-                            <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path></svg>
-                            <span class="ml-3">Questions</span>
-                        </a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="fas fa-sign-out-alt me-2"></i>Sign out
+                            </button>
+                        </form>
                     </li>
                 </ul>
             </div>
-        </aside>
-
-        <!-- Main Content -->
-        <div class="p-4 md:ml-64 pt-20">
-            @if(session('success'))
-                <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50" role="alert">
-                    <span class="font-medium">Sukses!</span> {{ session('success') }}
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-                    <span class="font-medium">Error!</span> {{ session('error') }}
-                </div>
-            @endif
-
-            @yield('content')
         </div>
-        
-    </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        @yield('content')
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script>
+        // Sidebar Toggle for Mobile
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('show');
+            sidebarOverlay.classList.toggle('show');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('show');
+            sidebarOverlay.classList.remove('show');
+        });
+
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
 </body>
 </html>

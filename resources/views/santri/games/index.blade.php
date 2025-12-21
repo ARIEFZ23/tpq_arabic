@@ -88,11 +88,11 @@
                     </div>
                     <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 text-center border-2 border-blue-200 transform group-hover:scale-105 transition-transform">
                         <div class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                            4
+                            <span>⏱️</span>
                         </div>
                         <div class="text-xs text-gray-600 font-semibold mt-1 flex items-center justify-center gap-1">
-                            <span>🎯</span>
-                            <span>Level</span>
+                            <span>⚡</span>
+                            <span>timer mode</span>
                         </div>
                     </div>
                 </div>
@@ -102,6 +102,10 @@
                     <div class="flex items-center gap-2 bg-gradient-to-r from-teal-50 to-cyan-50 px-4 py-2 rounded-lg border-2 border-teal-200">
                         <span class="text-lg">🎧</span>
                         <span class="text-xs font-bold text-gray-700">Pilihan Ganda</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-lg border-2 border-blue-200">
+                        <span class="text-lg">🧩🧩</span>
+                        <span class="text-xs font-bold text-gray-700">Susun Kata</span>
                     </div>
                     <div class="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-lg border-2 border-blue-200">
                         <span class="text-lg">🏆</span>

@@ -19,7 +19,8 @@ class Question extends Model
         'image_path',
         'correct_answer',
         'options',
-        'location_name'
+        'location_name',
+        'answer_type',
     ];
 
     protected $casts = [

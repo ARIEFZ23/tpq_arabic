@@ -83,13 +83,28 @@
                                 <div class="border-2 border-gray-200 rounded-2xl p-4 sm:p-6 hover:border-emerald-300 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-fade-in-up" style="animation-delay: {{ 0.05 * $index }}s;">
                                     <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                                         <div class="flex-1 min-w-0">
-                                            <!-- Header -->
+                                            <!-- Header with Answer Type Badge -->
                                             <div class="flex flex-wrap items-center gap-2 mb-3">
                                                 <span class="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 text-xs sm:text-sm font-bold px-3 py-1.5 rounded-full border border-emerald-300 transform hover:scale-105 transition-transform duration-300">
                                                     📝 Soal #{{ $questions->firstItem() + $index }}
                                                 </span>
+                                                
+                                                <!-- ✨ BADGE TIPE JAWABAN (BARU!) -->
+                                                @php
+                                                    $answerType = $question->answer_type ?? 'multiple_choice';
+                                                @endphp
+                                                @if($answerType === 'essay')
+                                                    <span class="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 text-xs font-bold px-3 py-1.5 rounded-full border border-blue-300 transform hover:scale-105 transition-transform duration-300">
+                                                        ✍️ Essay
+                                                    </span>
+                                                @else
+                                                    <span class="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 text-xs font-bold px-3 py-1.5 rounded-full border border-purple-300 transform hover:scale-105 transition-transform duration-300">
+                                                        ✅ Pilihan Ganda
+                                                    </span>
+                                                @endif
+
                                                 @if($question->location_name)
-                                                    <span class="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full border border-blue-300 transform hover:scale-105 transition-transform duration-300">
+                                                    <span class="bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 text-xs font-bold px-2 py-1 rounded-full border border-orange-300 transform hover:scale-105 transition-transform duration-300">
                                                         📍 {{ $question->location_name }}
                                                     </span>
                                                 @endif
@@ -118,18 +133,21 @@
                                                 </p>
                                             </div>
 
-                                            <!-- Options (for multiple choice) -->
-                                            @if($question->options)
+                                            <!-- Options (only for multiple choice) -->
+                                            @if($answerType === 'multiple_choice' && $question->options)
                                                 @php
                                                     $options = json_decode($question->options, true);
                                                 @endphp
                                                 @if(is_array($options) && count($options) > 0)
-                                                    <div>
-                                                        <p class="text-xs sm:text-sm font-bold text-gray-700 mb-2">📋 Pilihan Jawaban:</p>
+                                                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-4 mb-3">
+                                                        <p class="text-xs sm:text-sm font-bold text-purple-800 mb-3 flex items-center gap-2">
+                                                            <span>✅</span>
+                                                            <span>Pilihan Jawaban (Multiple Choice):</span>
+                                                        </p>
                                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                             @foreach($options as $optIndex => $option)
-                                                                <div class="bg-gray-50 border-2 border-gray-200 px-3 py-2 rounded-lg text-xs sm:text-sm flex items-center hover:border-emerald-300 hover:bg-emerald-50 hover:scale-105 transition-all duration-300 group">
-                                                                    <span class="bg-gradient-to-r from-gray-200 to-gray-300 group-hover:from-emerald-200 group-hover:to-teal-200 text-gray-700 group-hover:text-emerald-700 font-bold px-2 py-1 rounded mr-2 text-xs flex-shrink-0 transition-colors duration-300">
+                                                                <div class="bg-white border-2 border-purple-200 px-3 py-2 rounded-lg text-xs sm:text-sm flex items-center hover:border-purple-400 hover:bg-purple-50 hover:scale-105 transition-all duration-300 group">
+                                                                    <span class="bg-gradient-to-r from-purple-200 to-pink-200 group-hover:from-purple-300 group-hover:to-pink-300 text-purple-700 font-bold px-2 py-1 rounded mr-2 text-xs flex-shrink-0 transition-colors duration-300">
                                                                         {{ chr(65 + $optIndex) }}
                                                                     </span>
                                                                     <span class="line-clamp-2">{{ $option }}</span>
@@ -138,6 +156,14 @@
                                                         </div>
                                                     </div>
                                                 @endif
+                                            @elseif($answerType === 'essay')
+                                                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4 mb-3">
+                                                    <p class="text-xs sm:text-sm font-bold text-blue-800 flex items-center gap-2">
+                                                        <span>✍️</span>
+                                                        <span>Tipe Jawaban: Essay (Jawaban Singkat)</span>
+                                                    </p>
+                                                    <p class="text-xs text-blue-600 mt-1">Santri akan mengetik jawaban mereka sendiri</p>
+                                                </div>
                                             @endif
 
                                             <!-- Timestamp -->
@@ -192,16 +218,16 @@
                 @endif
             </div>
 
-            <!-- Info Card - Bonus -->
+            <!-- Enhanced Info Card -->
             <div class="mt-4 sm:mt-6 bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl shadow-lg p-4 sm:p-6 border-2 border-emerald-200 hover:shadow-xl transition-shadow duration-300 animate-fade-in-up" style="animation-delay: 0.4s;">
                 <div class="flex items-start gap-3 sm:gap-4">
                     <span class="text-3xl sm:text-4xl animate-pulse">💡</span>
                     <div class="flex-1">
-                        <h3 class="text-base sm:text-lg font-bold text-emerald-800 mb-2">Tips Kelola Pertanyaan</h3>
+                        <h3 class="text-base sm:text-lg font-bold text-emerald-800 mb-2">✨ Fitur Baru: Tipe Jawaban Fleksibel!</h3>
                         <ul class="text-xs sm:text-sm text-gray-700 space-y-1">
-                            <li>• Buat pertanyaan yang jelas dan mudah dipahami</li>
-                            <li>• Gunakan gambar berkualitas untuk game tebak gambar</li>
-                            <li>• Pastikan jawaban benar sudah sesuai</li>
+                            <li>• <strong>Pilihan Ganda (✅):</strong> Pertanyaan dengan 4 opsi pilihan jawaban</li>
+                            <li>• <strong>Essay (✍️):</strong> Pertanyaan dengan jawaban singkat yang diketik santri</li>
+                            <li>• Anda bisa <strong>mencampur kedua tipe</strong> dalam satu game yang sama!</li>
                             <li>• Minimal 5 pertanyaan untuk game yang berkualitas</li>
                         </ul>
                     </div>
@@ -276,5 +302,5 @@
         .animate-bounce-slow {
             animation: bounceSlow 3s ease-in-out infinite;
         }
-    <</style>
+    </style>
 @endsection

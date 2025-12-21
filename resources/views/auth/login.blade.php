@@ -249,13 +249,7 @@
                             </span>
                         </a>
                         
-                        <!-- Info untuk Ustadz/Admin -->
-                        <div class="bg-amber-50 border-2 border-amber-200 rounded-xl p-4">
-                            <p class="text-xs text-center text-amber-700 font-medium flex items-center justify-center gap-2">
-                                <span>👨‍🏫</span>
-                                <span>Ustadz/Ustadzah/Admin? Hubungi admin untuk mendapatkan akun</span>
-                            </p>
-                        </div>
+                        
                     </div>
                 </form>
 

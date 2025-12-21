@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-// DITAMBAHKAN: Imports untuk Validasi Bulk
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -86,26 +85,23 @@ class UstadzController extends Controller
      */
     public function storeGame(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|in:tebak_gambar,kosakata_tempat,pilihan_ganda,percakapan',
             'description' => 'nullable|string'
         ]);
 
         try {
-            Game::create([
-                'title' => $request->title,
-                'type' => $request->type,
-                'description' => $request->description,
-                'created_by' => Auth::id()
-                // Status otomatis 'draft' by default dari migrasi
-            ]);
+            $validated['created_by'] = Auth::id();
+            Game::create($validated);
 
             return redirect()->route('ustadz.games.index')
                 ->with('success', 'Game berhasil dibuat! Silakan tambahkan pertanyaan.');
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal membuat game: ' . $e->getMessage());
+            \Log::error('Failed to create game: ' . $e->getMessage());
+            return back()->with('error', 'Gagal membuat game. Silakan coba lagi.')
+                ->withInput();
         }
     }
 
@@ -132,24 +128,22 @@ class UstadzController extends Controller
     {
         $game = Game::where('created_by', Auth::id())->findOrFail($id);
 
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|in:tebak_gambar,kosakata_tempat,pilihan_ganda,percakapan',
             'description' => 'nullable|string'
         ]);
 
         try {
-            $game->update([
-                'title' => $request->title,
-                'type' => $request->type,
-                'description' => $request->description
-            ]);
+            $game->update($validated);
 
             return redirect()->route('ustadz.games.index')
                 ->with('success', 'Game berhasil diupdate!');
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal mengupdate game: ' . $e->getMessage());
+            \Log::error('Failed to update game: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengupdate game. Silakan coba lagi.')
+                ->withInput();
         }
     }
 
@@ -161,12 +155,22 @@ class UstadzController extends Controller
         $game = Game::where('created_by', Auth::id())->findOrFail($id);
 
         try {
+            // Delete semua gambar dari questions
+            $questions = $game->questions;
+            foreach ($questions as $question) {
+                if ($question->image_path && Storage::disk('public')->exists($question->image_path)) {
+                    Storage::disk('public')->delete($question->image_path);
+                }
+            }
+
             $game->delete();
+            
             return redirect()->route('ustadz.games.index')
                 ->with('success', 'Game berhasil dihapus!');
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus game: ' . $e->getMessage());
+            \Log::error('Failed to delete game: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus game. Silakan coba lagi.');
         }
     }
 
@@ -177,24 +181,27 @@ class UstadzController extends Controller
     {
         $game = Game::where('created_by', Auth::id())->findOrFail($id);
 
-        // Keamanan: Jangan biarkan game di-publish jika tidak ada soal
+        // Validasi: Game tidak bisa di-publish jika tidak ada soal
         if ($game->status == 'draft' && $game->questions()->count() == 0) {
             return back()->with('error', 'Game tidak bisa di-publish karena belum memiliki soal.');
         }
 
-        // Toggle status
-        if ($game->status == 'draft') {
-            $game->status = 'published';
-            $message = 'Game berhasil di-publish!';
-        } else {
-            $game->status = 'draft';
-            $message = 'Game berhasil di-unpublish (disimpan sebagai draft).';
+        try {
+            // Toggle status
+            $newStatus = $game->status == 'draft' ? 'published' : 'draft';
+            $message = $newStatus == 'published' 
+                ? 'Game berhasil di-publish!' 
+                : 'Game berhasil di-unpublish (disimpan sebagai draft).';
+
+            $game->update(['status' => $newStatus]);
+
+            return redirect()->route('ustadz.games.index')
+                ->with('success', $message);
+                
+        } catch (\Exception $e) {
+            \Log::error('Failed to toggle game status: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengubah status game. Silakan coba lagi.');
         }
-
-        $game->save();
-
-        return redirect()->route('ustadz.games.index')
-            ->with('success', $message);
     }
 
     /**
@@ -242,51 +249,48 @@ class UstadzController extends Controller
     }
 
     /**
-     * ======================================================
-     * DIROMBAK TOTAL: Method storeQuestion (BULK)
-     * ======================================================
+     * Store Question (BULK & FLEXIBLE TYPE) - FIXED VERSION
      */
     public function storeQuestion(Request $request, $game_id)
     {
         $game = Game::where('created_by', Auth::id())->findOrFail($game_id);
 
-        // 1. Validasi array 'questions'
+        // Validasi input
         $rules = [
             'questions' => 'required|array|min:1',
+            'questions.*.answer_type' => 'required|in:multiple_choice,essay',
             'questions.*.question_text' => 'required|string',
             'questions.*.correct_answer' => 'required|string|max:255',
-            'questions.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            // Hanya wajib jika game 'pilihan_ganda'
-            'questions.*.options' => Rule::requiredIf($game->type == 'pilihan_ganda'),
+            'questions.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'questions.*.options' => 'required_if:questions.*.answer_type,multiple_choice|array',
             'questions.*.options.*' => 'nullable|string|max:255',
-             // Hanya wajib jika game 'kosakata_tempat' atau 'percakapan'
-            'questions.*.location_name' => Rule::requiredIf($game->type == 'kosakata_tempat' || $game->type == 'percakapan'),
+            'questions.*.location_name' => 'nullable|string|max:255',
         ];
 
         $messages = [
-            'questions.*.question_text.required' => 'Teks pertanyaan untuk :attribute wajib diisi.',
-            'questions.*.correct_answer.required' => 'Jawaban benar untuk :attribute wajib diisi.',
-            'questions.*.image.image' => 'File yang diupload untuk :attribute harus berupa gambar.',
-            'questions.*.options.required' => 'Pilihan jawaban untuk :attribute wajib diisi (untuk game Pilihan Ganda).',
-            'questions.*.location_name.required' => 'Nama lokasi untuk :attribute wajib diisi (untuk game Kosakata/Percakapan).',
+            'questions.*.question_text.required' => 'Teks pertanyaan wajib diisi.',
+            'questions.*.correct_answer.required' => 'Jawaban benar wajib diisi.',
+            'questions.*.image.image' => 'File harus berupa gambar.',
+            'questions.*.image.max' => 'Ukuran gambar maksimal 2MB.',
+            'questions.*.answer_type.required' => 'Tipe jawaban wajib dipilih.',
+            'questions.*.options.required_if' => 'Pilihan jawaban wajib diisi untuk soal pilihan ganda.',
         ];
 
-        // 1b. Validasi data input
         $validator = Validator::make($request->all(), $rules, $messages);
 
-        // 1c. Menambahkan atribut nama yang manusiawi (Soal 1, Soal 2, dst.)
-        $attributeNames = collect($request->get('questions', []))
-            ->mapWithKeys(function ($item, $index) {
+        // Set attribute names untuk error yang lebih jelas
+        $attributeNames = [];
+        if ($request->has('questions')) {
+            foreach ($request->questions as $index => $item) {
                 $label = 'Soal ' . ($index + 1);
-                return [
-                    "questions.{$index}.question_text" => $label,
-                    "questions.{$index}.correct_answer" => $label,
-                    "questions.{$index}.image" => $label,
-                    "questions.{$index}.options" => $label,
-                    "questions.{$index}.location_name" => $label,
-                ];
-            })->all();
-
+                $attributeNames["questions.{$index}.question_text"] = $label;
+                $attributeNames["questions.{$index}.correct_answer"] = $label;
+                $attributeNames["questions.{$index}.image"] = $label;
+                $attributeNames["questions.{$index}.options"] = $label;
+                $attributeNames["questions.{$index}.answer_type"] = $label;
+                $attributeNames["questions.{$index}.location_name"] = $label;
+            }
+        }
         $validator->setAttributeNames($attributeNames);
 
         if ($validator->fails()) {
@@ -295,60 +299,70 @@ class UstadzController extends Controller
 
         $allQuestionsData = $request->questions;
         $questionCount = 0;
-        $uploadedImages = []; // Untuk melacak gambar jika terjadi rollback
+        $uploadedImages = [];
 
-        // 2. Gunakan DB Transaction (Agar aman)
         DB::beginTransaction();
         try {
-            // 3. Looping untuk setiap soal yang di-submit
             foreach ($allQuestionsData as $index => $questionData) {
-
                 $imagePath = null;
-                // 4. Handle image upload (jika ada)
+
+                // Upload gambar jika ada
                 if ($request->hasFile("questions.{$index}.image")) {
-                    $imagePath = $request->file("questions.{$index}.image")->store('questions', 'public');
-                    $uploadedImages[] = $imagePath; // Catat gambar
+                    $file = $request->file("questions.{$index}.image");
+                    $imagePath = $file->store('questions', 'public');
+                    $uploadedImages[] = $imagePath;
                 }
 
+                // Proses options untuk multiple choice
                 $options = null;
-                // 5. Handle options (jika ada dan merupakan pilihan ganda)
-                if ($game->type == 'pilihan_ganda' && !empty($questionData['options'])) {
-                    // Filter pilihan yang kosong (misal: Ustadz hanya isi 2)
-                    $filteredOptions = array_filter($questionData['options'], fn($value) => $value !== null && $value !== '');
-                    if (!empty($filteredOptions)) {
-                         $options = json_encode(array_values($filteredOptions)); // Re-index array
+                if ($questionData['answer_type'] === 'multiple_choice' && isset($questionData['options'])) {
+                    $filteredOptions = array_filter(
+                        $questionData['options'], 
+                        fn($value) => !empty(trim($value ?? ''))
+                    );
+                    
+                    if (count($filteredOptions) >= 2) {
+                        $options = json_encode(array_values($filteredOptions));
+                    } else {
+                        throw new \Exception("Soal pilihan ganda harus memiliki minimal 2 pilihan jawaban.");
                     }
                 }
 
-                // 6. Simpan ke database
+                // Simpan ke database
                 Question::create([
                     'game_id' => $game->id,
-                    'question_text' => $questionData['question_text'],
-                    'correct_answer' => $questionData['correct_answer'],
+                    'answer_type' => $questionData['answer_type'],
+                    'question_text' => trim($questionData['question_text']),
+                    'correct_answer' => trim($questionData['correct_answer']),
                     'image_path' => $imagePath,
                     'options' => $options,
-                    'location_name' => $questionData['location_name'] ?? null
+                    'location_name' => !empty($questionData['location_name']) 
+                        ? trim($questionData['location_name']) 
+                        : null
                 ]);
 
                 $questionCount++;
             }
 
-            // 7. Commit jika semua berhasil
             DB::commit();
 
             return redirect()->route('ustadz.games.questions.index', $game->id)
-                ->with('success', "$questionCount pertanyaan baru berhasil ditambahkan!");
+                ->with('success', "$questionCount pertanyaan berhasil ditambahkan!");
 
         } catch (\Exception $e) {
-            // 8. Rollback jika ada error
             DB::rollBack();
 
-            // Hapus gambar yang terlanjur di-upload
+            // Hapus semua gambar yang sudah diupload
             foreach ($uploadedImages as $path) {
-                Storage::disk('public')->delete($path);
+                if (Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
+                }
             }
 
-            return back()->with('error', 'Gagal menyimpan pertanyaan. Terjadi kesalahan: ' . $e->getMessage())->withInput();
+            \Log::error('Failed to store questions: ' . $e->getMessage());
+            return back()
+                ->with('error', 'Gagal menyimpan pertanyaan: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
@@ -370,62 +384,88 @@ class UstadzController extends Controller
 
         $options = [];
         if ($question->options) {
-            $options = json_decode($question->options, true) ?? [];
+            $decodedOptions = json_decode($question->options, true);
+            $options = is_array($decodedOptions) ? $decodedOptions : [];
         }
 
         return view('ustadz.questions.edit', compact('game', 'question', 'locationOptions', 'options'));
     }
 
     /**
-     * Update question
+     * Update Question (FLEXIBLE TYPE) - FIXED VERSION
      */
     public function updateQuestion(Request $request, $game_id, $question_id)
     {
         $game = Game::where('created_by', Auth::id())->findOrFail($game_id);
         $question = $game->questions()->findOrFail($question_id);
 
-        $request->validate([
+        $validated = $request->validate([
+            'answer_type' => 'required|in:multiple_choice,essay',
             'question_text' => 'required|string',
             'correct_answer' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'options' => 'nullable|array',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'location_name' => 'nullable|string|max:255',
+            'options' => 'required_if:answer_type,multiple_choice|array',
             'options.*' => 'nullable|string|max:255',
-            'location_name' => 'nullable|string|max:255'
+            'remove_image' => 'nullable|boolean'
         ]);
 
         try {
             $imagePath = $question->image_path;
+
+            // Handle image removal
+            if ($request->boolean('remove_image') && $imagePath) {
+                if (Storage::disk('public')->exists($imagePath)) {
+                    Storage::disk('public')->delete($imagePath);
+                }
+                $imagePath = null;
+            }
+
+            // Handle new image upload
             if ($request->hasFile('image')) {
-                // Delete old image if exists
+                // Delete old image
                 if ($imagePath && Storage::disk('public')->exists($imagePath)) {
                     Storage::disk('public')->delete($imagePath);
                 }
-
                 $imagePath = $request->file('image')->store('questions', 'public');
             }
 
+            // Process options untuk multiple choice
             $options = null;
-            // DIPERBAIKI: Menghapus options kosong saat update
-            if ($game->type == 'pilihan_ganda' && $request->filled('options') && is_array($request->options)) {
-                $filteredOptions = array_filter($request->options, fn($value) => $value !== null && $value !== '');
-                if (!empty($filteredOptions)) {
-                     $options = json_encode(array_values($filteredOptions)); // Re-index array
+            if ($validated['answer_type'] === 'multiple_choice' && $request->filled('options')) {
+                $filteredOptions = array_filter(
+                    $request->options, 
+                    fn($value) => !empty(trim($value ?? ''))
+                );
+                
+                if (count($filteredOptions) >= 2) {
+                    $options = json_encode(array_values($filteredOptions));
+                } else {
+                    return back()
+                        ->with('error', 'Soal pilihan ganda harus memiliki minimal 2 pilihan jawaban.')
+                        ->withInput();
                 }
             }
 
             $question->update([
-                'question_text' => $request->question_text,
-                'correct_answer' => $request->correct_answer,
+                'answer_type' => $validated['answer_type'],
+                'question_text' => trim($validated['question_text']),
+                'correct_answer' => trim($validated['correct_answer']),
                 'image_path' => $imagePath,
                 'options' => $options,
-                'location_name' => $request->location_name
+                'location_name' => !empty($validated['location_name']) 
+                    ? trim($validated['location_name']) 
+                    : null
             ]);
 
             return redirect()->route('ustadz.games.questions.index', $game->id)
                 ->with('success', 'Pertanyaan berhasil diupdate!');
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal mengupdate pertanyaan: ' . $e->getMessage());
+            \Log::error('Failed to update question: ' . $e->getMessage());
+            return back()
+                ->with('error', 'Gagal mengupdate pertanyaan. Silakan coba lagi.')
+                ->withInput();
         }
     }
 
@@ -449,7 +489,8 @@ class UstadzController extends Controller
                 ->with('success', 'Pertanyaan berhasil dihapus!');
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus pertanyaan: ' . $e->getMessage());
+            \Log::error('Failed to delete question: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus pertanyaan. Silakan coba lagi.');
         }
     }
 
@@ -505,7 +546,7 @@ class UstadzController extends Controller
     }
 
     /**
-     * Matrix Review - Lihat semua jawaban semua santri dalam 1 matrix (FIXED!)
+     * Matrix Review - FIXED VERSION
      */
     public function reviewMatrix($game_id)
     {
@@ -513,23 +554,23 @@ class UstadzController extends Controller
             ->with('questions')
             ->findOrFail($game_id);
 
-        // Ambil semua santri yang PERNAH mengerjakan game ini
+        // Ambil santri yang pernah mengerjakan game ini
         $santriList = User::whereHas('scores', function($q) use ($game_id) {
             $q->where('game_id', $game_id);
         })
-        ->where(function($query) {
-            $query->where('role', 'santri_putra')
-                  ->orWhere('role', 'santri_putri');
-        })
+        ->whereIn('role', ['santri_putra', 'santri_putri'])
+        ->orderBy('name')
         ->get();
 
-        // Group answer logs by user_id-question_id key
-        $answerLogs = AnswerLog::where('game_id', $game_id)
+        // Ambil semua answer logs untuk game ini
+        $answerLogsCollection = AnswerLog::where('game_id', $game_id)
             ->whereIn('user_id', $santriList->pluck('id'))
-            ->get()
-            ->groupBy(function($log) {
-                return $log->user_id . '-' . $log->question_id;
-            });
+            ->get();
+
+        // Group by kombinasi user_id dan question_id
+        $answerLogs = $answerLogsCollection->mapToGroups(function ($item) {
+            return [$item->user_id . '-' . $item->question_id => $item];
+        });
 
         return view('ustadz.scores.matrix', compact('game', 'santriList', 'answerLogs'));
     }

@@ -174,22 +174,22 @@
                             <thead class="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 text-white">
                                 <tr>
                                     <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
-                                        📚 Game
+                                        Game
                                     </th>
                                     <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
-                                        🏷️ Tipe
+                                        Tipe
                                     </th>
                                     <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
-                                        ❓ Pertanyaan
+                                        Pertanyaan
                                     </th>
                                     <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
-                                        📊 Pengerjaan
+                                        Pengerjaan
                                     </th>
                                     <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
-                                        🚦 Status
+                                        Status
                                     </th>
                                     <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">
-                                        ⚙️ Aksi
+                                        Aksi
                                     </th>
                                 </tr>
                             </thead>
@@ -270,13 +270,13 @@
                                                         <button type="submit" 
                                                                 class="px-3 py-1.5 bg-gradient-to-r from-gray-400 to-gray-500 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300 active:scale-95" 
                                                                 title="Unpublish (Jadikan Draft)">
-                                                            📦 Draft
+                                                            Draft
                                                         </button>
                                                     @else
                                                         <button type="submit" 
                                                                 class="px-3 py-1.5 bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300 active:scale-95" 
                                                                 title="Publish (Tayangkan ke Santri)">
-                                                            🚀 Publish
+                                                            Publish
                                                         </button>
                                                     @endif
                                                 </form>
@@ -284,19 +284,19 @@
                                                 <a href="{{ route('ustadz.games.show', $game->id) }}" 
                                                    class="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300 active:scale-95" 
                                                    title="Detail">
-                                                    👁️
+                                                    Detail
                                                 </a>
                                                 
                                                 <a href="{{ route('ustadz.games.questions.index', $game->id) }}" 
                                                    class="px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300 active:scale-95" 
                                                    title="Kelola Soal">
-                                                    📝
+                                                    Soal
                                                 </a>
                                                 
                                                 <a href="{{ route('ustadz.games.edit', $game->id) }}" 
                                                    class="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300 active:scale-95" 
                                                    title="Edit">
-                                                    ✏️
+                                                    Edit
                                                 </a>
                                                 
                                                 <form action="{{ route('ustadz.games.destroy', $game->id) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus game ini? Semua pertanyaan akan ikut terhapus!')">
@@ -305,7 +305,7 @@
                                                     <button type="submit" 
                                                             class="px-3 py-1.5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300 active:scale-95" 
                                                             title="Hapus">
-                                                        🗑️
+                                                        Hapus
                                                     </button>
                                                 </form>
                                             </div>

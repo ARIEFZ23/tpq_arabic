@@ -84,12 +84,27 @@
         html {
             scroll-behavior: smooth;
         }
+
+        /* Sticky Navigation with Shadow on Scroll */
+        .nav-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .nav-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
     </style>
 </head>
 <body class="h-full">
     <div class="min-h-full">
-        <!-- Navigation -->
-        <nav class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 border-b-4 border-emerald-400" x-data="{ mobileMenuOpen: false, profileDropdown: false }">
+        <!-- Navigation - Now Sticky -->
+        <nav class="nav-sticky bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 border-b-4 border-emerald-400" 
+             x-data="{ mobileMenuOpen: false, profileDropdown: false, scrolled: false }"
+             x-init="window.addEventListener('scroll', () => { scrolled = window.scrollY > 10 })"
+             :class="{ 'nav-shadow': scrolled }">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <!-- Left Section: Logo & Desktop Menu -->
