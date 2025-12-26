@@ -128,6 +128,9 @@ class SantriController extends Controller
                                 ->where('game_id', $game->id)
                                 ->exists();
             
+            // Hitung skor mentah (jawaban benar x 10)
+            $rawPoints = $correctAnswers * 10;
+            
             $user->experience_points = ($user->experience_points ?? 0) + $xpEarned;
             $user->total_score = ($user->total_score ?? 0) + $scorePercentage;
             
@@ -138,6 +141,9 @@ class SantriController extends Controller
             $levelInfo = LevelSystem::getLevelInfo($user->experience_points);
             $user->level = $levelInfo['level'];
             $user->save();
+            
+            // Increment total accumulated points SETELAH save()
+            $user->increment('total_accumulated_points', $rawPoints);
             
             $score = Score::create([
                 'user_id' => $user->id,
@@ -477,6 +483,9 @@ class SantriController extends Controller
         $user->level = $levelInfo['level'];
         $user->save();
         
+        // Increment total accumulated points SETELAH save()
+        $user->increment('total_accumulated_points', $newScore);
+        
         $survivalGame = Game::where('type', 'survival')->first();
         if ($survivalGame) {
             $scorePercentage = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100, 2) : 0;
@@ -573,6 +582,9 @@ class SantriController extends Controller
             $user->level = $levelInfo['level'];
             $user->save();
             
+            // Increment total accumulated points SETELAH save()
+            $user->increment('total_accumulated_points', $score);
+            
             // Simpan ke tabel scores (dengan game dummy sentence_builder)
             $sentenceBuilderGame = Game::where('type', 'sentence_builder')->first();
             
@@ -587,7 +599,7 @@ class SantriController extends Controller
                 ]);
             }
             
-            // Simpan data ke session untuk ditampilkan di halaman result
+           
             session([
                 'sentence_builder_score' => $score,
                 'sentence_builder_correct' => $correctAnswers,

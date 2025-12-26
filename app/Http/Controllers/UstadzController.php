@@ -366,9 +366,6 @@ class UstadzController extends Controller
         }
     }
 
-    /**
-     * Show form edit question
-     */
     public function editQuestion($game_id, $question_id)
     {
         $game = Game::where('created_by', Auth::id())->findOrFail($game_id);

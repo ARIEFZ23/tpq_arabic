@@ -731,6 +731,10 @@ public function resumeGame(): array
     private function completeGame(User $user, array $session): array
     {
         $this->updateUserStatistics($user, $session);
+        
+        // ✅ TAMBAHAN BARU: Increment total accumulated points
+        $user->increment('total_accumulated_points', $session['score']);
+        
         $this->updateLeaderboard($user);
         
         $updatedUser = $user->fresh();
@@ -740,7 +744,6 @@ public function resumeGame(): array
             ->where('questionable_type', \App\Models\ListeningQuestion::class)
             ->sum('exp_earned');
 
-// Gunakan kolom 'experience_points' yang valid
         $levelInfo = \App\Helpers\LevelSystem::getLevelInfo($updatedUser->experience_points ?? 0);
         $oldLevelInfo = \App\Helpers\LevelSystem::getLevelInfo(($updatedUser->experience_points ?? 0) - $totalExpGained);
         $levelUp = $levelInfo['level'] > $oldLevelInfo['level'];
@@ -763,15 +766,11 @@ public function resumeGame(): array
         
         Cache::forget($this->getSessionKey($user->id));
 
-        // ================================================================
-        // ✅ PERBAIKAN KRITIS: Return format konsisten dengan method lain
-        // HAPUS nested 'success' dan 'data', return langsung
-        // ================================================================
         return [
-    'status' => 'completed',
-    'summary' => $summary,
-    'rewards' => $rewards,
-];
+            'status' => 'completed',
+            'summary' => $summary,
+            'rewards' => $rewards,
+        ];
     }
 
     private function updateUserStatistics(User $user, array $session): void
@@ -784,7 +783,6 @@ public function resumeGame(): array
             ->selectRaw('SUM(exp_earned) as total_exp, COUNT(id) as total_questions')
             ->first();
 
-// Menggunakan kolom 'total_score' dan 'experience_points' yang sudah ada
         $user->total_score = ($user->total_score ?? 0) + $session['score'];
         $user->experience_points = ($user->experience_points ?? 0) + ($sessionStats->total_exp ?? 0);
         

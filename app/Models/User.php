@@ -33,6 +33,7 @@ class User extends Authenticatable
         'total_games_completed',
         'current_badge',
         'profile_photo',
+        'total_accumulated_points',
     ];
 
     /**
